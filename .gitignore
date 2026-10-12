@@ -1,0 +1,32 @@
+﻿# Visual Studio
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+ 
+# Build output
+bin/
+obj/
+ 
+# Debug symbols
+*.pdb
+ 
+# Logs
+*.log
+ 
+# Temporary files
+*.tmp
+ 
+# NuGet packages (per progetti vecchi)
+packages/
+ 
+# Test results
+TestResults/
+ 
+# Rider
+.idea/
+ 
+# Windows
+Thumbs.db
+Desktop.ini

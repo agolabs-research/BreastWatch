@@ -1,0 +1,44 @@
+﻿cff-version: 1.2.0
+message: "If you use this software, please cite the associated publication."
+
+title: "BREASTWATCH"
+
+authors:
+  - family-names: Agostinelli
+    given-names: Stefano
+
+license: "Other"
+
+preferred-citation:
+  type: article
+  title: "BreastWatch: A Varian Eclipse script tool for Community-Based automatic evaluation of breast treatment plans"
+  authors:
+    - family-names: Agostinelli
+      given-names: Stefano
+    - family-names: Zefiro
+      given-names: D
+    - family-names: Garelli
+      given-names: S
+    - family-names: Cavagnetto
+      given-names: F
+    - family-names: Gusinu
+      given-names: M
+    - family-names: Bevegni
+      given-names: M
+    - family-names: Blandino
+      given-names: G
+    - family-names: Fozza
+      given-names: A
+    - family-names: Levrero
+      given-names: F
+  journal: "Journal of Applied Clinical Medical Physics"
+  year: 2025
+  volume: 26
+  issue: 6
+  doi: "10.1002/acm2.70080"
+
+identifiers:
+  - type: pmid
+    value: "40170438"
+
+repository-artifact: "BREASTWATCH"

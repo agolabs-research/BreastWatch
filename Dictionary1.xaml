@@ -1,0 +1,90 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Style x:Key="Header1" TargetType="ListViewItem">
+        <Setter Property="Foreground" Value="Transparent" />
+    </Style>
+    <Style x:Key="HeaderRed" TargetType="ListViewItem">
+        <Setter Property="Foreground" Value="Red" />
+    </Style>
+    <Style x:Key="HeaderGreen" TargetType="ListViewItem">
+        <Setter Property="Foreground" Value="Green" />
+    </Style>
+
+    <Style TargetType="{x:Type Button}"/>
+    <Style TargetType="{x:Type ToggleButton}"/>
+    <Style TargetType="{x:Type TextBox}"/>
+    <Style TargetType="{x:Type Label}"/>
+    <Style TargetType="{x:Type RadioButton}"/>
+    <Style TargetType="{x:Type ListView}"/>
+    <Style TargetType="{x:Type ProgressBar}"/>
+    <Style TargetType="{x:Type CheckBox}"/>
+    <Style TargetType="{x:Type GroupBox}"/>
+    <Style TargetType="{x:Type Panel}"/>
+    <Style TargetType="{x:Type StackPanel}"/>
+    <Style TargetType="{x:Type Grid}"/>
+    <Style TargetType="{x:Type ComboBox}"/>
+    <Style TargetType="{x:Type ListBox}"/>
+    <Style TargetType="{x:Type Expander}"/>
+    <Style TargetType="{x:Type ScrollBar}"/>
+    <Style TargetType="{x:Type TabControl}"/>
+    <Style TargetType="{x:Type TabItem}"/>
+    <Style TargetType="{x:Type GridView}"/>
+    <Style TargetType="{x:Type GridViewColumn}"/>
+    <Style TargetType="{x:Type GridViewColumnHeader}"/>
+ 
+    <ToolTip x:Key="ToolLists">
+        <StackPanel>
+            <TextBlock>Volume list:</TextBlock>
+            <TextBlock>Select specified volume (bold = mandatory)</TextBlock>
+            <TextBlock>CTRL+click on selection to deselect any volume</TextBlock>
+            <TextBlock>Data list:</TextBlock>
+            <TextBlock>Ck = coverage of target with dose k Gy in %</TextBlock>
+            <TextBlock>Vt = % of organ receiving dose t Gy</TextBlock>
+            <TextBlock>Rk = conformity index for target with dose k Gy</TextBlock>
+            <TextBlock>D%V = dose in Gy given to volume V measured in percent</TextBlock>
+            <TextBlock>DcV = dose in Gy given to volume V measured in cc</TextBlock>
+            <TextBlock>* = addition or modification to protocol</TextBlock>
+            <TextBlock>~ = +/- 5%</TextBlock>
+        </StackPanel>
+    </ToolTip>
+
+    <ToolTip x:Key="ToolExp">
+        <StackPanel>
+            <TextBlock>Shows data to be saved in file</TextBlock>
+        </StackPanel>
+    </ToolTip>
+
+    <Rectangle x:Key="TestFailed" x:Shared="false" Width="16" Height="16">
+        <Rectangle.Fill>
+            <DrawingBrush>
+                <DrawingBrush.Drawing>
+                    <DrawingGroup>
+                        <DrawingGroup.Children>
+                            <GeometryDrawing Brush="#00FFFFFF" Geometry="F1M16,16L0,16 0,0 16,0z" />
+                            <GeometryDrawing Brush="#FFF6F6F6" Geometry="F1M1.7173,11.6309L5.3483,7.9999 1.7173,4.3689 4.3683,1.7169 8.0003,5.3479 11.6313,1.7169 14.2833,4.3679 10.6523,7.9999 14.2833,11.6309 11.6313,14.2829 8.0003,10.6519 4.3683,14.2829z" />
+                            <GeometryDrawing Brush="#FFE41300" Geometry="F1M9.2379,7.9999L12.8689,11.6309 11.6309,12.8689 7.9999,9.2379 4.3689,12.8689 3.1309,11.6309 6.7619,7.9999 3.1309,4.3689 4.3689,3.1309 7.9999,6.7619 11.6309,3.1309 12.8689,4.3689z" />
+                        </DrawingGroup.Children>
+                    </DrawingGroup>
+                </DrawingBrush.Drawing>
+            </DrawingBrush>
+        </Rectangle.Fill>
+    </Rectangle>
+
+    <Rectangle x:Key="TestPassed" x:Shared="false" Width="16" Height="16">
+        <Rectangle.Fill>
+            <DrawingBrush>
+                <DrawingBrush.Drawing>
+                    <DrawingGroup>
+                        <DrawingGroup.Children>
+                            <GeometryDrawing Brush="#00FFFFFF" Geometry="F1M16,16L0,16 0,0 16,0z" />
+                            <GeometryDrawing Brush="#FFF6F6F6" Geometry="F1M6.1668,9.1924L3.0308,6.0554 0.555800000000001,8.5304 6.1668,14.1414 15.4438,4.8634 12.9698,2.3894z" />
+                            <GeometryDrawing Brush="#FF329932" Geometry="F1M6.1665,12.7275L1.9695,8.5305 3.0305,7.4695 6.1665,10.6065 12.9695,3.8035 14.0305,4.8635z" />
+                        </DrawingGroup.Children>
+                    </DrawingGroup>
+                </DrawingBrush.Drawing>
+            </DrawingBrush>
+        </Rectangle.Fill>
+    </Rectangle>
+
+
+</ResourceDictionary>

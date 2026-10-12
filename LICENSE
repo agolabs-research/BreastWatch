@@ -1,0 +1,41 @@
+﻿LICENSE
+
+Research Software License (Non-Commercial, No Redistribution)
+
+Author: Stefano Agostinelli, U.O. Fisica Sanitaria, AOM IRCCS Ospedale Policlinico San Martino
+
+This software is provided exclusively as a research tool.
+It is intended solely for non-commercial scientific research and internal evaluation.
+
+Permission to use this software is granted only under the conditions below.
+
+1. No Clinical Use
+This software is provided for research purposes only.
+It is NOT intended for clinical use, treatment planning, or clinical decision-making.
+
+2. Non-Commercial Use Only
+The software may not be used, directly or indirectly, for any commercial purpose.
+Commercial use includes, but is not limited to:
+   - integration into commercial products
+   - provision of paid services
+   - use in revenue-generating activities
+
+3. No Redistribution
+The software may NOT be:
+   - distributed
+   - shared
+   - sublicensed
+ to third parties, in whole or in part, either modified or unmodified.
+
+4. Internal Modifications Allowed
+Users may modify the software for internal use only.
+Modified versions may not be distributed.
+
+5. Data Protection and GDPR Compliance
+The user is solely responsible for ensuring compliance with all applicable data protection and privacy laws, including Regulation (EU) 2016/679 (GDPR) when using this software. The authors and copyright holders assume no responsibility for any processing of personal data performed using this software.
+
+6. Attribution
+Any scientific publication resulting from the use of this software must cite the original work.
+
+7. No Warranty
+The software is provided "as is", without warranty of any kind.
