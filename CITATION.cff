@@ -1,13 +1,13 @@
-﻿cff-version: 1.2.0
+cff-version: 1.2.0
 message: "If you use this software, please cite the associated publication."
 
-title: "BREASTWATCH"
+title: "BreastWatch"
 
 authors:
   - family-names: Agostinelli
     given-names: Stefano
 
-license: "Other"
+license: LicenseRef-Proprietary
 
 preferred-citation:
   type: article
@@ -31,6 +31,7 @@ preferred-citation:
       given-names: A
     - family-names: Levrero
       given-names: F
+
   journal: "Journal of Applied Clinical Medical Physics"
   year: 2025
   volume: 26
@@ -40,5 +41,3 @@ preferred-citation:
 identifiers:
   - type: pmid
     value: "40170438"
-
-repository-artifact: "BREASTWATCH"
