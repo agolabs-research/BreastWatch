@@ -77,6 +77,9 @@
     <Compile Include="PropPopupWindow.xaml.cs">
       <DependentUpon>PropPopupWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="UserControlFilterPopup.xaml.cs">
+      <DependentUpon>UserControlFilterPopup.xaml</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Page Include="Dictionary1.xaml">
@@ -127,6 +130,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="UserControlFilterPopup.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="OxyPlot.Wpf">
@@ -134,10 +141,13 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
+    <None Include=".gitignore" />
     <None Include="CITATION.cff" />
-    <None Include="LICENSE" />
     <None Include="README.md" />
     <None Include="THIRD-PARTY-NOTICES.md" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="LICENSE" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

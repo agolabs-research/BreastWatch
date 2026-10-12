@@ -6,7 +6,7 @@
         xmlns:oxy="http://oxyplot.org/wpf"
         xmlns:local="clr-namespace:BreastWatch"
         mc:Ignorable="d"
-        Title="Breast Watch 1.7.5.0 - Developed by Stefano Agostinelli - Research Use Only" WindowStartupLocation="CenterScreen" Activated="MainCommentWindow_Activated" ResizeMode="NoResize" Width="1200" Height="700">
+        Title="Breast Watch 1.8.3.3 - Developed by Stefano Agostinelli - Research Use Only" WindowStartupLocation="CenterScreen" ResizeMode="NoResize" Width="1280" Height="715" Loaded="MainCommentWindow_Loaded">
 
     <Window.DataContext>
         <local:InspectorViewModel/>
@@ -22,10 +22,11 @@
 
     <Grid x:Name="MainGrid" Margin="5,0,5,0">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="460*"/>
-            <ColumnDefinition Width="480*"/>
-            <ColumnDefinition Width="130*"/>
-            <ColumnDefinition Width="130*"/>
+            <ColumnDefinition Width="377*"/>
+            <ColumnDefinition Width="135*"/>
+            <ColumnDefinition Width="492*"/>
+            <ColumnDefinition Width="133*"/>
+            <ColumnDefinition Width="133*"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="300*"/>
@@ -33,7 +34,7 @@
             <RowDefinition Height="80*"/>
         </Grid.RowDefinitions>
 
-        <GroupBox x:Name="InfoBox" Header="Info">
+        <GroupBox x:Name="InfoBox" Header="Info" Grid.ColumnSpan="2" Margin="0,0,0,438" Grid.RowSpan="2">
             <Grid x:Name="InfoBoxGrid">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="20*"/>
@@ -73,7 +74,7 @@
             </Grid>
         </GroupBox>
 
-        <Grid x:Name="ProtocolExport" Grid.Column="1">
+        <Grid x:Name="ProtocolExport" Grid.Column="1" Grid.ColumnSpan="3" Margin="135,0,133,438" Grid.RowSpan="2">
             <Grid.RowDefinitions>
                 <RowDefinition Height="300*"/>
                 <RowDefinition Height="700*"/>
@@ -90,10 +91,10 @@
                     <TextBox x:Name="ProtocolID" VerticalAlignment="Center" MinHeight="24" Grid.Column="1" VerticalContentAlignment="Center"/>
                     <Label x:Name="ProtocolLabel" Content="Protocol"  VerticalAlignment="Center" Grid.Column="2"/>
                     <ComboBox x:Name="ProtocolComboBox" IsReadOnly="True" VerticalAlignment="Center" SelectionChanged="ProtocolComboBox_SelectionChanged" MinHeight="24" Grid.Column="3" Grid.Row="1">
-                        <ComboBoxItem Content="RTOG1005 ARM II: 40.05/48 Gy (15 FR) v1.0" IsEnabled="False"/>
+                        <ComboBoxItem Content="RTOG1005 ARM II: 40.05/48 Gy (15 FR) v1.2" IsEnabled="False"/>
                         <ComboBoxItem Content="UK FAST FORWARD ARM 2: 26/30 Gy (5 FR) v1.1" IsEnabled="False"/>
                         <ComboBoxItem Content="UK FAST ARM 2: 28.5/31 Gy (5 FR) v1.0" IsEnabled="False"/>
-                        <ComboBoxItem Content="EUROPA WBI: 40.05 Gy (15 FR) v1.0" IsEnabled="False"/>
+                        <ComboBoxItem Content="EUROPA WBI: 40.05 Gy (15 FR) v1.1" IsEnabled="False"/>
                         <ComboBoxItem Content="EUROPA WBI: 26 Gy (5 FR) v1.0" IsEnabled="False"/>
                         <ComboBoxItem Content="EUROPA PBI: 30 Gy (5 FR) v1.0" IsEnabled="False"/>
                     </ComboBox>
@@ -210,7 +211,7 @@
             </GroupBox>
         </Grid>
 
-        <GroupBox Header="Technique" Grid.Column="2">
+        <GroupBox Header="Technique" Grid.Column="3" Grid.ColumnSpan="2" Margin="0,0,133,438" Grid.RowSpan="2">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="50*"/>
@@ -242,8 +243,7 @@
                     </Grid.RowDefinitions>
                     <CheckBox x:Name="BoostCheckBox" Content="with Boost" Click="BoostCheckBox_Click" ToolTip="Plan includes Boost irradiation" VerticalAlignment="Center">
                     </CheckBox>
-                    <CheckBox x:Name="SPCNCheckBox" Content="with SPC/N" Click="BoostCheckBox_Click" ToolTip="Plan includes SPC/N irradiation" IsEnabled="False" Grid.Row="1" VerticalAlignment="Center">
-                    </CheckBox>
+                    <CheckBox x:Name="SPCNCheckBox" Content="with SPC/N" Click="SPCNCheckBox_Click" ToolTip="Plan includes SPC/N irradiation" Grid.Row="1" VerticalAlignment="Center"/>
                 </Grid>
                 <Grid Grid.Row="2" Grid.ColumnSpan="2" Margin="0,5,0,0">
                     <Grid.RowDefinitions>
@@ -255,8 +255,7 @@
                     </CheckBox>
                     <CheckBox x:Name="TangentialCheckBox" Content="Tangential" ToolTip="&quot;Tangential&quot; beams/arcs: adds TANG to TECHNIQUE" Grid.ColumnSpan="4" Grid.Row="1" VerticalAlignment="Center">
                     </CheckBox>
-                    <CheckBox x:Name="AutoPlannedCheckBox" Content="Autoplanned" ToolTip="Autoplanned plan: adds AUTO to TECHNIQUE" Grid.Column="1" Grid.Row="2" VerticalAlignment="Center">
-                    </CheckBox>
+                    <CheckBox x:Name="AutoPlannedCheckBox" Content="Autoplanned" ToolTip="Autoplanned plan: adds AUTO to TECHNIQUE" Grid.Column="1" Grid.Row="2" VerticalAlignment="Center"/>
                 </Grid>
 
                 <Grid Grid.Column="1">
@@ -265,15 +264,13 @@
                         <RowDefinition Height="1*"/>
                         <RowDefinition Height="1*"/>
                     </Grid.RowDefinitions>
-                    <CheckBox x:Name="SUMCheckBox" Content="SUM" IsEnabled="False" ToolTip="Plan Sum" Width="100" HorizontalAlignment="Left" VerticalAlignment="Center">
-                    </CheckBox>
-                    <CheckBox x:Name="HybridCheckBox" Content="Hybrid" ToolTip="Hybrid technique (e.g. 3D+IM): adds HYBRID to TECHNIQUE" IsEnabled="False" Width="100" VerticalAlignment="Center" HorizontalAlignment="Left" Grid.Row="1">
-                    </CheckBox>
+                    <CheckBox x:Name="SUMCheckBox" Content="SUM" IsEnabled="False" ToolTip="Plan Sum" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                    <CheckBox x:Name="HybridCheckBox" Content="Hybrid" ToolTip="Hybrid technique (e.g. 3D+IM): adds HYBRID to TECHNIQUE" IsEnabled="False" VerticalAlignment="Center" HorizontalAlignment="Left" Grid.Row="1"/>
                 </Grid>
             </Grid>
         </GroupBox>
 
-        <Grid x:Name="LateralityBolus" Grid.Column="3">
+        <Grid x:Name="LateralityBolus" Grid.Column="4" Margin="0,0,0,438" Grid.RowSpan="2">
             <Grid.RowDefinitions>
                 <RowDefinition Height="750*"/>
                 <RowDefinition Height="250*"/>
@@ -285,7 +282,7 @@
                         <ColumnDefinition Width="34*"/>
                     </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="15*"/>
+                        <RowDefinition Height="10*"/>
                         <RowDefinition Height="10*"/>
                     </Grid.RowDefinitions>
                     <Grid Grid.ColumnSpan="2">
@@ -303,7 +300,7 @@
                             <RowDefinition Height="1*"/>
                             <RowDefinition Height="1*"/>
                         </Grid.RowDefinitions>
-                        <CheckBox x:Name="ProneCheckBox" Content="PRONE" ToolTip="If checked adds &quot;PRONE&quot; in LATERALITY" VerticalAlignment="Center">
+                        <CheckBox x:Name="ProneCheckBox" Content="PRONE" ToolTip="If checked adds &quot;PRONE&quot; in LATERALITY" VerticalAlignment="Center" Click="ProneCheckBox_Click">
                         </CheckBox>
                         <CheckBox x:Name="BilateralCheckBox" Content="BILATERAL" ToolTip="If checked adds &quot;BIL&quot; in LATERALITY" Click="BilateralCheckBox_Click" HorizontalAlignment="Left" Grid.Row="1" VerticalAlignment="Center">
                         </CheckBox>
@@ -329,14 +326,14 @@
 
         </Grid>
 
-        <StackPanel x:Name="HelpStackPanel" Orientation="Horizontal" Panel.ZIndex="10" Grid.Column="3" Grid.Row="1" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,-2,0,0">
+        <StackPanel x:Name="HelpStackPanel" Orientation="Horizontal" Panel.ZIndex="10" Grid.Column="4" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,204,0,0" Grid.RowSpan="2">
             <Label x:Name="HelpLabel" VerticalAlignment="Center" Margin="0,0,0,0" ToolTip="Go to BreastWatch History page @Agolabs.com">
                 <Hyperlink x:Name="HelpLabelLink" Click="HelpHandler">What's new</Hyperlink>
             </Label>
             <Label x:Name="LegendLabel" Content="Legend" RenderTransformOrigin="-57.733,2.385" ToolTip="{DynamicResource ToolLists}" Cursor="Help" Margin="0" VerticalAlignment="Center"/>
         </StackPanel>
 
-        <TabControl x:Name="TargetsTabControl" Grid.Row="1">
+        <TabControl x:Name="TargetsTabControl" Grid.Row="1" Grid.ColumnSpan="2">
             <TabItem x:Name="TargetTabItem" Header="Targets">
                 <Grid x:Name="TargetsGrid" Background="#FFE5E5E5" Margin="0">
                     <Grid.ColumnDefinitions>
@@ -376,7 +373,7 @@
                         </ListView.View>
                     </ListView>
                     <Label x:Name="TargetSPCLabel" Content="SPC/N PTV" Margin="2,2,2,0" VerticalAlignment="Top" Grid.Column="2"/>
-                    <ListBox x:Name="TargetSPCList" SelectionChanged="TargetSPCList_SelectionChanged" Margin="2,29,2,0" Height="150" VerticalAlignment="Top" Grid.Column="2"/>
+                    <ListBox x:Name="TargetSPCList" SelectionChanged="TargetBreastList_SelectionChanged" Margin="2,29,2,0" Height="150" VerticalAlignment="Top" Grid.Column="2"/>
                     <TextBlock x:Name="TargetSPCId" TextWrapping="Wrap" Text="-" Margin="2,185,2,0" Height="20" VerticalAlignment="Top" Grid.Column="2"/>
                     <ListView x:Name="TargetSPCDataListView" FontSize="11" Margin="2,210,2,5" Grid.Column="2" MouseDoubleClick="IpsiLungDataListView_MouseDoubleClick">
                         <ListView.View>
@@ -387,7 +384,7 @@
             </TabItem>
         </TabControl>
 
-        <TabControl x:Name="OARsTabControl" Grid.ColumnSpan="4" Grid.Row="1" Grid.Column="1">
+        <TabControl x:Name="OARsTabControl" Grid.ColumnSpan="4" Grid.Row="1" Grid.Column="1" Margin="135,0,0,0">
             <TabItem x:Name="MainOARsTabItem" Header="Main OARs">
                 <Grid Background="#FFE5E5E5" Margin="0">
                     <Grid.ColumnDefinitions>
@@ -498,16 +495,43 @@
             </TabItem>
         </TabControl>
 
-        <Grid x:Name="BottomPanel" Grid.ColumnSpan="4" Grid.Row="2">
+        <Grid x:Name="BottomPanel" Grid.ColumnSpan="5" Grid.Row="1" Margin="0,438,0,0" Grid.RowSpan="2">
             <TextBlock x:Name="UserNameLabel" Height="22" TextWrapping="Wrap" Text="user" Width="400" HorizontalAlignment="Left" Margin="5,11,0,11" VerticalAlignment="Center"/>
-            <StackPanel x:Name="ProgressPanel" Width="300" VerticalAlignment="Center" Height="36" Orientation="Horizontal" Grid.Column="1" HorizontalAlignment="Right">
-                <TextBlock x:Name="PlanScoreLabel" TextWrapping="Wrap" Text="BW Score" Margin="5,0,0,0" VerticalAlignment="Center"/>
-                <ProgressBar x:Name="PlanScore" Margin="10,0,0,0" Width="200" Height="28" ToolTip="Evaluates the dose-constraints pass rate for Targets and Main OARs" HorizontalAlignment="Right"/>
-                <TextBlock x:Name="PlanScoreText" TextWrapping="Wrap" Text="{Binding Value, ElementName=PlanScore, StringFormat=\{0:0\}%}" VerticalAlignment="Center" Margin="5,0,0,0"/>
-            </StackPanel>
-            <StackPanel Orientation="Horizontal" Margin="398,6,397,6" HorizontalAlignment="Center" Grid.ColumnSpan="2" VerticalAlignment="Center">
-                <Button x:Name="OKBtn" Content="Append data to Export file &amp; Exit" Click="OKBtn_Click" Width="200" HorizontalAlignment="Left" VerticalAlignment="Center" Height="28"/>
-                <Button x:Name="CancelBtn" Content="Cancel" Canvas.Left="302" Canvas.Top="621" Width="160" Click="CancelBtn_Click" Margin="10,0,0,0" HorizontalAlignment="Left" Height="28"/>
+            <Grid Width="350" HorizontalAlignment="Right" VerticalAlignment="Center" Height="45">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="18*"/>
+                    <RowDefinition Height="18*"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="20*"></ColumnDefinition>
+                    <ColumnDefinition Width="45*"></ColumnDefinition>
+                    <ColumnDefinition Width="15*"></ColumnDefinition>
+                    <ColumnDefinition Width="30*"></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+                <TextBlock x:Name="PlanScoreLabel" TextWrapping="Wrap" Text="BW Score" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,5,0"/>
+                <ProgressBar x:Name="PlanScore" Height="18" ToolTip="Evaluates the dose-constraints pass rate for Targets and Main OARs" Value="100" Grid.Column="1"/>
+                <TextBlock x:Name="PlanScoreText" Text="{Binding Value, ElementName=PlanScore, StringFormat=\{0:0\}%}" VerticalAlignment="Center" Grid.Column="2" HorizontalAlignment="Left" Margin="5,0,0,0"/>
+                <ComboBox x:Name="ScoreStyleComboBox" Grid.Column="3" SelectedIndex="0" VerticalAlignment="Top" DropDownClosed="ScoreColorsComboBox_DropDownClosed" ToolTip="Switches between coloring styles" Grid.ColumnSpan="2">
+                    <ComboBoxItem Content="Protocol"/>
+                    <ComboBoxItem Content="Community"/>
+                    <ComboBoxItem Content="Gradient"/>
+                </ComboBox>
+                <TextBlock x:Name="CBPlanScoreLabel" VerticalAlignment="Center" Text="CB Score" Grid.Row="1" HorizontalAlignment="Right" Margin="0,0,5,0"/>
+                <ProgressBar x:Name="CBPlanScore" Height="18" ToolTip="The mean of Community Scores for Targets and Main OARs" Grid.Row="1" Foreground="Blue" VerticalAlignment="Center" Grid.Column="1"/>
+                <TextBlock x:Name="CBPlanScoreText" TextWrapping="Wrap" Text="{Binding Value, ElementName=CBPlanScore, StringFormat=\{0:0\}%}" VerticalAlignment="Center" Grid.Row="1" Grid.Column="2" HorizontalAlignment="Left" Margin="5,0,0,0"/>
+                <ToggleButton x:Name="TogglePopupButton" Grid.Column="3" Grid.Row="1" IsChecked="False" >
+                    <StackPanel>
+                        <TextBlock x:Name="CBRecords" TextWrapping="Wrap" VerticalAlignment="Center" Text="(NO RECS)" AutomationProperties.IsOffscreenBehavior="Offscreen"/>
+                        <Popup Name="myPopup" IsOpen="{Binding IsChecked, ElementName=TogglePopupButton}" Placement="Top">
+                            <local:UserControlFilterPopup x:Name="FilterPopup"/>
+                        </Popup>
+                    </StackPanel>
+                </ToggleButton>
+
+            </Grid>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Grid.ColumnSpan="2" VerticalAlignment="Center">
+                <Button x:Name="OKBtn" Content="Append data to Export File &amp; Exit" Click="OKBtn_Click" Width="200" HorizontalAlignment="Left" VerticalAlignment="Center" Height="32"/>
+                <Button x:Name="CancelBtn" Content="Cancel" Canvas.Left="302" Canvas.Top="621" Width="160" Click="CancelBtn_Click" Margin="10,0,0,0" HorizontalAlignment="Left" Height="32"/>
             </StackPanel>
         </Grid>
     </Grid>

@@ -44,7 +44,7 @@
             <TextBlock>D%V = dose in Gy given to volume V measured in percent</TextBlock>
             <TextBlock>DcV = dose in Gy given to volume V measured in cc</TextBlock>
             <TextBlock>* = addition or modification to protocol</TextBlock>
-            <TextBlock>~ = +/- 5%</TextBlock>
+            <TextBlock>~ = +/- 3%</TextBlock>
         </StackPanel>
     </ToolTip>
 

@@ -57,8 +57,6 @@ namespace BreastWatch
 
                 prpwindow.Left = point.X - prpwindow.Width + 12;
                 prpwindow.Top = point.Y - 12;
-                if (mainWindow.dataTable_dip == MainWindow.DataInspectorPolicy.DIP_ALLTB || mainWindow.dataTable_dts == MainWindow.DataTableStatus.DTS_TRUEBELIEVER)
-                    prpwindow.USERToggleButton.Visibility = Visibility.Hidden;
 
                 prpwindow.Owner = this;
                 prpwindow.ShowDialog();

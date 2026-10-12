@@ -31,15 +31,21 @@ using OxyPlot.Series;
 using OxyPlot.Annotations;
 using static BreastWatch.PropPopupWindow;
 using System.Net;
-
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
+using System.Runtime.Remoting.Lifetime;
+using System.Security.Cryptography;
+using System.Security.Policy;
 
 namespace BreastWatch
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
-    /// </summary>
+    /// 
 
-    public class mListViewItemStyleSelector : StyleSelector
+    public enum ScoreStyle { Protocol = 0, Community, Gradient };
+
+    // Protocol Style
+    public class mListViewItemProtocolStyleSelector : StyleSelector
     {
         public override Style SelectStyle(object item,
             DependencyObject container)
@@ -174,6 +180,140 @@ namespace BreastWatch
         }
     }
 
+    // Community Gradient Style
+    public class mListViewItemCommunityGradientStyleSelector : StyleSelector
+    {
+        public override Style SelectStyle(object item,
+            DependencyObject container)
+        {
+            Style st = new Style();
+            st.TargetType = typeof(ListViewItem);
+            Setter backGroundSetter = new Setter();
+            backGroundSetter.Property = ListViewItem.BackgroundProperty;
+            ListView listView =
+                ItemsControl.ItemsControlFromItemContainer(container)
+                  as ListView;
+
+            MyItem imyItem = (MyItem)item;
+            if (String.IsNullOrEmpty(imyItem.DTName) == false)
+            {
+                Setter pSetter = new Setter();
+                pSetter.Property = ListViewItem.BorderBrushProperty;
+                pSetter.Value = Brushes.Blue;
+                st.Setters.Add(pSetter);
+            }
+
+            if (imyItem.Results == null)
+            {
+                backGroundSetter.Value = Brushes.LightGray;
+            }
+            else
+            {
+                SolidColorBrush passColor, failColor, warnColor;
+                SolidColorBrush ScoreColor;
+
+                if (imyItem.Data.Contains("*"))
+                {
+                    passColor = Brushes.LightGreen;
+                    warnColor = Brushes.LightYellow;
+                    failColor = Brushes.Orange;
+                }
+                else
+                {
+                    passColor = Brushes.LightGreen;
+                    warnColor = Brushes.Yellow;
+                    failColor = Brushes.Tomato;
+                }
+
+                if (imyItem.Data.Contains("Avg"))
+                {
+                    if (imyItem.Score >= 1)
+                        ScoreColor = passColor;
+                    else if (imyItem.Score == 0)
+                        ScoreColor = failColor;
+                    else
+                        ScoreColor = warnColor;
+
+                }
+                else if (imyItem.Data.Contains("Max"))
+                {
+                    if (imyItem.Score >= 1)
+                        ScoreColor = passColor;
+                    else if (imyItem.Score == 0)
+                        ScoreColor = failColor;
+                    else
+                        ScoreColor = warnColor;
+                }
+                else if (imyItem.Data.Contains('V'))
+                {
+                    if (imyItem.Score >= 1)
+                        ScoreColor = passColor;
+                    else if (imyItem.Score == 0)
+                        ScoreColor = failColor;
+                    else
+                        ScoreColor = warnColor;
+                }
+                else if (imyItem.Data.Contains('C'))
+                {
+                    if (imyItem.Score >= 1)
+                        ScoreColor = passColor;
+                    else if (imyItem.Score == 0)
+                        ScoreColor = failColor;
+                    else
+                        ScoreColor = warnColor;
+                }
+                else if (imyItem.Data.Contains('R'))
+                {
+                    if (imyItem.Score >= 1)
+                        ScoreColor = passColor;
+                    else if (imyItem.Score == 0)
+                        ScoreColor = failColor;
+                    else
+                        ScoreColor = warnColor;
+                }
+                else if (imyItem.Data.Contains("D%")) // Dose received by volume in %
+                {
+                    if (imyItem.Score >= 1)
+                        ScoreColor = passColor;
+                    else if (imyItem.Score == 0)
+                        ScoreColor = failColor;
+                    else
+                        ScoreColor = warnColor;
+                }
+                else if (imyItem.Data.Contains("Dc")) // Dose received by volume in cc
+                {
+                    if (imyItem.Score >= 1)
+                        ScoreColor = passColor;
+                    else if (imyItem.Score == 0)
+                        ScoreColor = failColor;
+                    else
+                        ScoreColor = warnColor;
+                }
+
+                else
+                    ScoreColor = Brushes.Blue;
+
+                if (imyItem.CommunityScore != -1 && imyItem.CommunityScore >= 0 && imyItem.CommunityScore <= 100)
+                {
+                    uint cbRGB = ScorePalette.GetPaletteRGB(imyItem.CommunityScore);
+
+                    LinearGradientBrush CBColor = new LinearGradientBrush(ScoreColor.Color, Color.FromRgb((byte)((cbRGB >> 16) & 0xFF), (byte)((cbRGB >> 8) & 0xFF), (byte)(cbRGB & 0xFF)), new Point(0.5, 0.5), new Point(1, 0.5));
+                    backGroundSetter.Value = CBColor;
+                }
+                else
+                {
+                    LinearGradientBrush CBColor = new LinearGradientBrush(ScoreColor.Color, Brushes.LightGray.Color, new Point(0.5, 0.5), new Point(1, 0.5));
+                    backGroundSetter.Value = CBColor;
+                }
+            }
+
+            st.Setters.Add(backGroundSetter);
+
+            return st;
+        }
+    }
+
+    // Community Style
     public class mListViewItemCommunityStyleSelector : StyleSelector
     {
         public override Style SelectStyle(object item,
@@ -286,16 +426,15 @@ namespace BreastWatch
                 else
                     ScoreColor = Brushes.Blue;
 
-                if (imyItem.CommunityScore >= 0 && imyItem.CommunityScore <= 100)
+                if (imyItem.CommunityScore != -1 && imyItem.CommunityScore >= 0 && imyItem.CommunityScore <= 100)
                 {
                     uint cbRGB = ScorePalette.GetPaletteRGB(imyItem.CommunityScore);
 
-                    //SolidColorBrush CBColor = new SolidColorBrush(Color.FromRgb((byte)((cbRGB >> 16) & 0xFF), (byte)((cbRGB >> 8) & 0xFF), (byte)(cbRGB & 0xFF)));
-                    LinearGradientBrush CBColor = new LinearGradientBrush(ScoreColor.Color, Color.FromRgb((byte)((cbRGB >> 16) & 0xFF), (byte)((cbRGB >> 8) & 0xFF), (byte)(cbRGB & 0xFF)), new Point(0.75, 0.5), new Point(1, 0.5));
+                    SolidColorBrush CBColor = new SolidColorBrush(Color.FromRgb((byte)((cbRGB >> 16) & 0xFF), (byte)((cbRGB >> 8) & 0xFF), (byte)(cbRGB & 0xFF)));
                     backGroundSetter.Value = CBColor;
                 }
                 else
-                    backGroundSetter.Value = ScoreColor;
+                    backGroundSetter.Value = Brushes.LightGray;
             }
 
             st.Setters.Add(backGroundSetter);
@@ -303,7 +442,6 @@ namespace BreastWatch
             return st;
         }
     }
-
 
     public class MyItem : INotifyPropertyChanged
     {
@@ -343,11 +481,17 @@ namespace BreastWatch
             get { return _itemScore; }
             set { _itemScore = value; OnPropertyChanged(); }
         }
-        private double _itemCBScore;
+        private double _itemCBScore = -1;
         public double CommunityScore
         {
             get { return _itemCBScore; }
             set { _itemCBScore = value; OnPropertyChanged(); }
+        }
+        private string _itemCBScoreString;
+        public string CommunityScoreString
+        {
+            get { if (_itemCBScore == -1) return "NA"; else return _itemCBScore.ToString("F0"); }
+            set { _itemCBScoreString = value; OnPropertyChanged(); }
         }
         private string _itemDTName;
         public string DTName
@@ -442,6 +586,8 @@ namespace BreastWatch
         public enum DataInspectorPolicy { DIP_NONE = -1, DIP_RESTRICTUSER = 0, DIP_ALLTB = 1};
         public DataInspectorPolicy dataTable_dip;
         public double DataInspectorRestrictUserPercentage;
+        public DataRow[] dataTable_filteredRows; // this contains filtered records. If policy restricts to current user, dataTable_filteredRows = dataTable_filteredRows_CurrentUser, otherwise dataTable_filteredRows will contain ALL users
+        public DataRow[] dataTable_filteredRows_CurrentUser; // filtered records restricted to current user
 
         public bool AnonymizePatientData;
 
@@ -457,7 +603,9 @@ namespace BreastWatch
 
             for (i = 0; i < dvhData.CurveData.Count(); i++)
             {
-                if (dvhData.CurveData[i].DoseValue.Dose >= dv.Dose)
+                DoseValue idv = dvhData.CurveData[i].DoseValue;
+                double iDose_Gy = (idv.Unit == DoseValue.DoseUnit.Gy ? idv.Dose : idv.Dose * 100);
+                if (iDose_Gy >= dv.Dose)
                 {
                     vol = dvhData.CurveData[i].Volume;
                     break;
@@ -469,14 +617,16 @@ namespace BreastWatch
         private double DVHGetDoseAtVolumeCC(DVHData dvhDataVolCC, double Volume_incc)
         {
             double dose = 0;
-
             int i;
 
             for (i = 0; i < dvhDataVolCC.CurveData.Count(); i++)
             {
+                DoseValue idv = dvhDataVolCC.CurveData[i].DoseValue;
+                double iDose_Gy = idv.Unit == DoseValue.DoseUnit.Gy ? idv.Dose : idv.Dose * 100;
+
                 if (dvhDataVolCC.CurveData[i].Volume <= Volume_incc)
                 {
-                    dose = dvhDataVolCC.CurveData[i].DoseValue.Dose;
+                    dose = iDose_Gy;
                     break;
                 }
             }
@@ -486,21 +636,23 @@ namespace BreastWatch
         private double DVHGetDoseAtVolume(DVHData dvhData, double Volume_inperc)
         {
             double dose = 0;
-
             int i;
 
             for (i = 0; i < dvhData.CurveData.Count(); i++)
             {
+                DoseValue idv = dvhData.CurveData[i].DoseValue;
+                double iDose_Gy = idv.Unit == DoseValue.DoseUnit.Gy ? idv.Dose : idv.Dose * 100;
+
                 if (dvhData.CurveData[i].Volume <= Volume_inperc)
                 {
-                    dose = dvhData.CurveData[i].DoseValue.Dose;
+                    dose = iDose_Gy;
                     break;
                 }
             }
             return dose;
         }
 
-        public MainWindow(Patient pat, PlanSetup planSetup, PlanSum planSum, StructureSet structureSet, string UserName, string ExportPath, string DataInspectorPolicy, double DataInspectorRestrictUserPercentage, bool AnonymizePatientData)
+        public MainWindow(Patient pat, PlanSetup planSetup, PlanSum planSum, StructureSet structureSet, string UserName, string ExportPath, string DataInspectorPolicy, double DataInspectorRestrictUserPercentage, bool AnonymizePatientData, ScoreStyle DefaultScoreStyle)
         {
             this.pat = pat;
             this.structureSet = structureSet;
@@ -539,6 +691,13 @@ namespace BreastWatch
 
             this.AnonymizePatientData = AnonymizePatientData;
 
+            if (DefaultScoreStyle == BreastWatch.ScoreStyle.Protocol)
+                ScoreStyleComboBox.SelectedIndex = 0;
+            else if (DefaultScoreStyle == BreastWatch.ScoreStyle.Community)
+                ScoreStyleComboBox.SelectedIndex = 1;
+            if (DefaultScoreStyle == BreastWatch.ScoreStyle.Gradient)
+                ScoreStyleComboBox.SelectedIndex = 2;
+
             this.DataInspectorRestrictUserPercentage = DataInspectorRestrictUserPercentage;
             if (DataInspectorPolicy == "RESTRICTUSER")
             {
@@ -550,7 +709,7 @@ namespace BreastWatch
             else
                 dataTable_dip = MainWindow.DataInspectorPolicy.DIP_NONE;
 
-            DoseValue PrescriptionDose = new DoseValue(0, "Gy");
+            DoseValue PrescriptionDose = new DoseValue(0, DoseValue.DoseUnit.Gy);
             if (planSetup != null)
             {
                 PlanId.Text = planSetup.Id;
@@ -563,7 +722,10 @@ namespace BreastWatch
                 if (planSetup.NumberOfFractions > 1)
                     Prescription.Text += "s";
                 Target.Text = planSetup.TargetVolumeID;
-                PrescriptionDose = planSetup.TotalDose;
+                if(planSetup.TotalDose.Unit == DoseValue.DoseUnit.Gy)
+                    PrescriptionDose = planSetup.TotalDose;
+                else
+                    PrescriptionDose = new DoseValue(planSetup.TotalDose.Dose * 100,DoseValue.DoseUnit.Gy);
             }
             else if (planSum != null)
             {
@@ -604,7 +766,7 @@ namespace BreastWatch
             BodyStructure = null;
             foreach (var structure in structureSet.Structures)
             {
-                if (structure.DicomType == "BODY" || structure.DicomType == "External" || structure.DicomType.Contains("Ext") || structure.Id.Contains("BODY") || structure.Id.Contains("body") || structure.Id.Contains("Ext") || structure.Id.Contains("ext"))
+                if (structure.DicomType == "EXTERNAL") //if (structure.DicomType == "BODY" || structure.DicomType == "External" || structure.DicomType.Contains("Ext") || structure.Id.Contains("BODY") || structure.Id.Contains("body") || structure.Id.Contains("Ext") || structure.Id.Contains("ext"))
                 {
                     if (planSetup != null)
                         bodydvhDataVolCC = planSetup.GetDVHCumulativeData(structure,
@@ -645,7 +807,7 @@ namespace BreastWatch
 
             if (planSetup != null)
             {
-                if (planSetup.Name.Contains("Par") || planSetup.Name.Contains("par"))
+                if (planSetup.Name.Contains("PAR") || planSetup.Name.Contains("Par") || planSetup.Name.Contains("par") || planSetup.Name.Contains("CW") || planSetup.Name.Contains("cw") || planSetup.Name.Contains("Chest") || planSetup.Name.Contains("chest"))
                 {
                     ChestWallCheckBox.IsChecked = true;
                     ExpanderCheckBox.IsEnabled = true;
@@ -655,7 +817,7 @@ namespace BreastWatch
             }
             else if (planSum != null)
             {
-                if (planSum.PlanSetups.First().Name.Contains("Par") || planSum.PlanSetups.First().Name.Contains("par"))
+                if (planSum.PlanSetups.First().Name.Contains("PAR") || planSum.PlanSetups.First().Name.Contains("Par") || planSum.PlanSetups.First().Name.Contains("par") || planSum.PlanSetups.First().Name.Contains("CW") || planSum.PlanSetups.First().Name.Contains("cw") || planSum.PlanSetups.First().Name.Contains("Chest") || planSum.PlanSetups.First().Name.Contains("chest"))
                 {
                     ChestWallCheckBox.IsChecked = true;
                     ExpanderCheckBox.IsEnabled = true;
@@ -669,7 +831,7 @@ namespace BreastWatch
             TargetBreastDataGridView.Columns.Add(new GridViewColumn
             {
                 Header = "Data",
-                DisplayMemberBinding = new Binding("Data"),
+                DisplayMemberBinding = new Binding("Data")
             });
             TargetBreastDataGridView.Columns.Add(new GridViewColumn
             {
@@ -686,9 +848,20 @@ namespace BreastWatch
                 Header = "%PD",
                 DisplayMemberBinding = new Binding("ResultsPerc")
             });
+            TargetBreastDataGridView.Columns.Add(new GridViewColumn
+            {
+                Header = "CB",
+                DisplayMemberBinding = new Binding("CommunityScoreString")
+            });
 
-            mListViewItemStyleSelector myListViewItemStyleSelector = new mListViewItemStyleSelector();
-            //mListViewItemCommunityStyleSelector myListViewItemStyleSelector = new mListViewItemCommunityStyleSelector();
+            // get default from ScoreStyle Tag
+            StyleSelector myListViewItemStyleSelector;
+            if (ScoreStyleComboBox.SelectedIndex == 1)
+                myListViewItemStyleSelector = new mListViewItemCommunityStyleSelector();
+            else if (ScoreStyleComboBox.SelectedIndex == 2)
+                myListViewItemStyleSelector = new mListViewItemCommunityGradientStyleSelector();
+            else
+                myListViewItemStyleSelector = new mListViewItemProtocolStyleSelector();
 
             TargetBreastDataListView.ItemContainerStyleSelector = myListViewItemStyleSelector;
 
@@ -713,6 +886,11 @@ namespace BreastWatch
             {
                 Header = "%PD",
                 DisplayMemberBinding = new Binding("ResultsPerc")
+            });
+            TargetBoostDataGridView.Columns.Add(new GridViewColumn
+            {
+                Header = "CB",
+                DisplayMemberBinding = new Binding("CommunityScoreString")
             });
 
             TargetBoostDataListView.ItemContainerStyleSelector = myListViewItemStyleSelector;
@@ -739,6 +917,11 @@ namespace BreastWatch
                 Header = "%PD",
                 DisplayMemberBinding = new Binding("ResultsPerc")
             });
+            TargetSPCDataGridView.Columns.Add(new GridViewColumn
+            {
+                Header = "CB",
+                DisplayMemberBinding = new Binding("CommunityScoreString")
+            });
 
             TargetSPCDataListView.ItemContainerStyleSelector = myListViewItemStyleSelector;
 
@@ -758,6 +941,11 @@ namespace BreastWatch
             {
                 Header = "Results",
                 DisplayMemberBinding = new Binding("Results")
+            });
+            IpsiLungDataGridView.Columns.Add(new GridViewColumn
+            {
+                Header = "CB",
+                DisplayMemberBinding = new Binding("CommunityScoreString")
             });
 
             IpsiLungDataListView.ItemContainerStyleSelector = myListViewItemStyleSelector;
@@ -780,6 +968,11 @@ namespace BreastWatch
                 Header = "Results",
                 DisplayMemberBinding = new Binding("Results")
             });
+            ContraLungDataGridView.Columns.Add(new GridViewColumn
+            {
+                Header = "CB",
+                DisplayMemberBinding = new Binding("CommunityScoreString")
+            });
 
             ContraLungDataListView.ItemContainerStyleSelector = myListViewItemStyleSelector;
 
@@ -799,6 +992,11 @@ namespace BreastWatch
             {
                 Header = "Results",
                 DisplayMemberBinding = new Binding("Results")
+            });
+            HeartDataGridView.Columns.Add(new GridViewColumn
+            {
+                Header = "CB",
+                DisplayMemberBinding = new Binding("CommunityScoreString")
             });
 
             HeartDataListView.ItemContainerStyleSelector = myListViewItemStyleSelector;
@@ -820,6 +1018,11 @@ namespace BreastWatch
                 Header = "Results",
                 DisplayMemberBinding = new Binding("Results")
             });
+            LeftCoronaryDataGridView.Columns.Add(new GridViewColumn
+            {
+                Header = "CB",
+                DisplayMemberBinding = new Binding("CommunityScoreString")
+            });
 
             LeftCoronaryDataListView.ItemContainerStyleSelector = myListViewItemStyleSelector;
 
@@ -839,6 +1042,11 @@ namespace BreastWatch
             {
                 Header = "Results",
                 DisplayMemberBinding = new Binding("Results")
+            });
+            ContraBreastDataGridView.Columns.Add(new GridViewColumn
+            {
+                Header = "CB",
+                DisplayMemberBinding = new Binding("CommunityScoreString")
             });
 
             ContraBreastDataListView.ItemContainerStyleSelector = myListViewItemStyleSelector;
@@ -860,6 +1068,11 @@ namespace BreastWatch
                 Header = "Results",
                 DisplayMemberBinding = new Binding("Results")
             });
+            ThyroidDataGridView.Columns.Add(new GridViewColumn
+            {
+                Header = "CB",
+                DisplayMemberBinding = new Binding("CommunityScoreString")
+            });
 
             ThyroidDataListView.ItemContainerStyleSelector = myListViewItemStyleSelector;
 
@@ -879,6 +1092,11 @@ namespace BreastWatch
             {
                 Header = "Results",
                 DisplayMemberBinding = new Binding("Results")
+            });
+            EsophagusDataGridView.Columns.Add(new GridViewColumn
+            {
+                Header = "CB",
+                DisplayMemberBinding = new Binding("CommunityScoreString")
             });
 
             EsophagusDataListView.ItemContainerStyleSelector = myListViewItemStyleSelector;
@@ -900,6 +1118,11 @@ namespace BreastWatch
                 Header = "Results",
                 DisplayMemberBinding = new Binding("Results")
             });
+            LiverDataGridView.Columns.Add(new GridViewColumn
+            {
+                Header = "CB",
+                DisplayMemberBinding = new Binding("CommunityScoreString")
+            });
 
             LiverDataListView.ItemContainerStyleSelector = myListViewItemStyleSelector;
 
@@ -920,6 +1143,11 @@ namespace BreastWatch
                 Header = "Results",
                 DisplayMemberBinding = new Binding("Results")
             });
+            StomachDataGridView.Columns.Add(new GridViewColumn
+            {
+                Header = "CB",
+                DisplayMemberBinding = new Binding("CommunityScoreString")
+            });
 
             StomachDataListView.ItemContainerStyleSelector = myListViewItemStyleSelector;
 
@@ -939,6 +1167,11 @@ namespace BreastWatch
             {
                 Header = "Results",
                 DisplayMemberBinding = new Binding("Results")
+            });
+            SkinDataGridView.Columns.Add(new GridViewColumn
+            {
+                Header = "CB",
+                DisplayMemberBinding = new Binding("CommunityScoreString")
             });
 
             SkinDataListView.ItemContainerStyleSelector = myListViewItemStyleSelector;
@@ -1021,6 +1254,17 @@ namespace BreastWatch
                     return;
                 }
             }
+
+            if (SPCNCheckBox.IsChecked == true)
+            {
+                if (TargetSPCList.SelectedIndex == -1)
+                {
+                    string message = "Please select a SPC/N PTV before saving data.";
+                    MessageBox.Show(message, "Breast Watch", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+            }
+
 
             if (Technique3DCRT.IsChecked == false && TechniqueIMRT.IsChecked == false && TechniqueVMAT.IsChecked == false) // this can happen for doseplans
             {
@@ -1165,10 +1409,13 @@ namespace BreastWatch
             this.DialogResult = true;
         }
 
-        private void ComputeBWScore()
+        // 18.10.24 added CB Score
+        private void ComputeScores()
         {
             int numTotal = 0;
-            double bwScore = 0;
+            int numCBTotal = 0;
+            double bwScore = -1;
+            double cbScore = -1;
 
             MyItem iMyItem;
             if (TargetBreastList.SelectedIndex != -1)
@@ -1177,6 +1424,11 @@ namespace BreastWatch
                 {
                     iMyItem = (MyItem)iItem;
                     bwScore += iMyItem.Score;
+                    if (iMyItem.CommunityScore != -1)
+                    { 
+                        cbScore += iMyItem.CommunityScore;
+                        numCBTotal++;
+                    }
                     numTotal++;
                 }
             }
@@ -1186,6 +1438,11 @@ namespace BreastWatch
                 {
                     iMyItem = (MyItem)iItem;
                     bwScore += iMyItem.Score;
+                    if (iMyItem.CommunityScore != -1)
+                    {
+                        cbScore += iMyItem.CommunityScore;
+                        numCBTotal++;
+                    }
                     numTotal++;
                 }
             }
@@ -1196,6 +1453,11 @@ namespace BreastWatch
                 {
                     iMyItem = (MyItem)iItem;
                     bwScore += iMyItem.Score;
+                    if (iMyItem.CommunityScore != -1)
+                    {
+                        cbScore += iMyItem.CommunityScore;
+                        numCBTotal++;
+                    }
                     numTotal++;
                 }
             }
@@ -1205,6 +1467,11 @@ namespace BreastWatch
                 {
                     iMyItem = (MyItem)iItem;
                     bwScore += iMyItem.Score;
+                    if (iMyItem.CommunityScore != -1)
+                    {
+                        cbScore += iMyItem.CommunityScore;
+                        numCBTotal++;
+                    }
                     numTotal++;
                 }
             }
@@ -1214,6 +1481,11 @@ namespace BreastWatch
                 {
                     iMyItem = (MyItem)iItem;
                     bwScore += iMyItem.Score;
+                    if (iMyItem.CommunityScore != -1)
+                    {
+                        cbScore += iMyItem.CommunityScore;
+                        numCBTotal++;
+                    }
                     numTotal++;
                 }
             }
@@ -1223,6 +1495,11 @@ namespace BreastWatch
                 {
                     iMyItem = (MyItem)iItem;
                     bwScore += iMyItem.Score;
+                    if (iMyItem.CommunityScore != -1)
+                    {
+                        cbScore += iMyItem.CommunityScore;
+                        numCBTotal++;
+                    }
                     numTotal++;
                 }
             }
@@ -1232,6 +1509,11 @@ namespace BreastWatch
                 {
                     iMyItem = (MyItem)iItem;
                     bwScore += iMyItem.Score;
+                    if (iMyItem.CommunityScore != -1)
+                    {
+                        cbScore += iMyItem.CommunityScore;
+                        numCBTotal++;
+                    }
                     numTotal++;
                 }
             }
@@ -1241,32 +1523,60 @@ namespace BreastWatch
                 {
                     iMyItem = (MyItem)iItem;
                     bwScore += iMyItem.Score;
+                    if (iMyItem.CommunityScore != -1)
+                    {
+                        cbScore += iMyItem.CommunityScore;
+                        numCBTotal++;
+                    }
                     numTotal++;
                 }
             }
 
-            bwScore *= 100;
-            bwScore /= numTotal;
-            PlanScore.Value = bwScore;
-            uint bwRGB = ScorePalette.GetPaletteRGB(bwScore);
-            if (bwRGB == 0)
-                PlanScore.IsIndeterminate = true;
+            if (bwScore != -1)
+            {
+                bwScore += +1;
+                
+                bwScore *= 100;
+                bwScore /= numTotal;
+                PlanScore.Value = bwScore;
+
+                PlanScore.IsIndeterminate = false;
+                if (bwScore < 60)
+                    PlanScore.Foreground = Brushes.Red;
+                else
+                    PlanScore.Foreground = Brushes.LimeGreen;
+            }
             else
             {
-                PlanScore.IsIndeterminate = false;
-                PlanScore.Foreground = new SolidColorBrush(Color.FromRgb((byte)((bwRGB >> 16) & 0xFF), (byte)((bwRGB >> 8) & 0xFF), (byte)(bwRGB & 0xFF)));
-                /*
-                if (bwScore < 60)
+                PlanScore.IsIndeterminate = true;
+                PlanScore.Foreground = Brushes.Blue;
+            }
+
+            if (cbScore != -1)
+            {
+                cbScore += +1;
+
+                cbScore /= numCBTotal;
+                CBPlanScore.Value = cbScore;
+
+                uint bwRGB = ScorePalette.GetPaletteRGB(cbScore);
+                if (bwRGB == 0)
                 {
-                    PlanScore.Foreground = Brushes.Red;
+                    CBPlanScore.IsIndeterminate = true;
+                    CBPlanScore.Foreground = Brushes.Blue;
                 }
                 else
                 {
-                    PlanScore.Foreground = Brushes.LimeGreen;
+                    CBPlanScore.IsIndeterminate = false;
+                    CBPlanScore.Foreground = new SolidColorBrush(Color.FromRgb((byte)((bwRGB >> 16) & 0xFF), (byte)((bwRGB >> 8) & 0xFF), (byte)(bwRGB & 0xFF)));
                 }
-                */
             }
-
+            else
+            {
+                CBPlanScore.Value = 0;
+                CBPlanScore.IsIndeterminate = true;
+                CBPlanScore.Foreground = Brushes.Blue;
+            }
         }
 
         public void PrepareProtocolTooltip()
@@ -1312,14 +1622,14 @@ namespace BreastWatch
         {
             string fString = "SAVE_DATE" + '\t' + "PAT_NAME" + '\t' + "PAT_ID" + '\t' + "PAT_ID2" + '\t' + "DATE_OF_BIRTH" + '\t' + "PROTOCOL" + '\t' + "PROTOCOL_PAT_ID" + '\t' + "LATERALITY" + '\t' + "TECHNIQUE" + '\t' + "MACHINE" + '\t' + "BOLUS" + '\t' + "PLAN_NAME" + '\t' + "PLAN_BEAMS" + '\t' + "OPTIONS" + '\t' + "wADDTARGETS" + '\t';
 
-            if (ProtocolComboBox.SelectedIndex == 0) // RTOG1005
+            if (ProtocolComboBox.SelectedIndex == 0) // RTOG1005 V1.2
             {
                 fString += "BREAST_VOL" + '\t' + "BREAST_C38.05" + '\t' + "BREAST_C36.05" + '\t' + "BREAST_V43.2" + '\t' + "BREAST_V48" + '\t' + "BREAST_Max" + '\t' + "BREAST_Avg" + '\t' + "BREAST_R38.05" + '\t';
                 fString += "BOOST_VOL" + '\t' + "BOOST_C45.6" + '\t' + "BOOST_C43.2" + '\t' + "BOOST_V52.8" + '\t' + "BOOST_Max" + '\t' + "BOOST_Avg" + '\t';
                 fString += "SPCN_VOL" + '\t' + "SPCN_C38.05" + '\t' + "SPCN_Max" + '\t' + "SPCN_Avg" + '\t';
-                fString += "IPSI-LUNG_V16" + '\t' + "IPSI-LUNG_V8" + '\t' + "IPSI-LUNG_V4" + '\t' + "IPSI-LUNG_Avg" + '\t';
-                fString += "CONTRA-LUNG_V4" + '\t' + "CONTRA-LUNG_Avg" + '\t';
-                fString += "HEART_V20" + '\t' + "HEART_V16" + '\t' + "HEART_V8" + '\t' + "HEART_Max" + '\t' + "HEART_Avg" + '\t';
+                fString += "IPSI-LUNG_V16" + '\t' + "IPSI-LUNG_V8" + '\t' + "IPSI-LUNG_V4" + '\t' + "IPSI-LUNG_V12" + '\t' + "IPSI-LUNG_Avg" + '\t';
+                fString += "CONTRA-LUNG_V4" + '\t' + "CONTRA-LUNG_V2.5" + '\t' + "CONTRA-LUNG_Avg" + '\t';
+                fString += "HEART_V20" + '\t' + "HEART_V16" + '\t' + "HEART_V8" + '\t' + "HEART_Max" + '\t' + "HEART_V10" + '\t' + "HEART_V2" + '\t' + "HEART_Avg" + '\t';
                 fString += "LEFT-COR_Max" + '\t' + "LEFT-COR_Avg" + '\t';
                 fString += "CONTRA-BREAST_V4" + '\t' + "CONTRA-BREAST_V2.4" + '\t' + "CONTRA-BREAST_Max" + '\t' + "CONTRA-BREAST_Avg" + '\t';
                 fString += "THYROID_V24" + '\t' + "THYROID_Max" + '\t' + "THYROID_Avg" + '\t';
@@ -1570,7 +1880,7 @@ namespace BreastWatch
                     }
                 }
                 else
-                    fString += "\t\t\t\t";
+                    fString += "\t\t\t\t\t";
 
                 if (ContraLungList.SelectedIndex != -1)
                 {
@@ -1589,10 +1899,12 @@ namespace BreastWatch
                         fString += imyItem.Results + '\t';
                         imyItem = (MyItem)ContraLungDataListView.Items.GetItemAt(3);
                         fString += imyItem.Results + '\t';
+                        imyItem = (MyItem)ContraLungDataListView.Items.GetItemAt(4);
+                        fString += imyItem.Results + '\t';
                     }
                 }
                 else
-                    fString += "\t\t";
+                    fString += "\t\t\t";
 
                 if (HeartList.SelectedIndex != -1)
                 {
@@ -1603,7 +1915,7 @@ namespace BreastWatch
                     }
                 }
                 else
-                    fString += "\t\t\t\t\t";
+                    fString += "\t\t\t\t\t\t\t";
 
                 if (LeftCoronaryList.SelectedIndex != -1)
                 {
@@ -2031,7 +2343,7 @@ namespace BreastWatch
                 imyItem = (MyItem)TargetBreastDataListView.Items.GetItemAt(2);
                 fString += imyItem.Results + '\t';
                 imyItem = (MyItem)TargetBreastDataListView.Items.GetItemAt(3);
-                fString += imyItem.Results + "\t\t";
+                fString += imyItem.Results + "\t";
                 imyItem = (MyItem)TargetBreastDataListView.Items.GetItemAt(4);
                 fString += imyItem.Results + '\t';
 
@@ -2436,15 +2748,154 @@ namespace BreastWatch
             return fString;
         }
 
+        // applies to FilterPopup filters the values found/selected for the current plan; this makes filtering look for "exact match" in the plan library
+        public void ApplyFilterDefaults_OnPopup()
+        {
+            if (BilateralCheckBox.IsChecked == true)
+            {
+                ((ComboBoxItem)(FilterPopup.Filter_BreastLaterality_ComboBox.Items.GetItemAt(2))).IsEnabled = false;
+                FilterPopup.Filter_BreastLaterality_ComboBox.SelectedIndex = 2;
+            }
+            else
+            {
+                ((ComboBoxItem)(FilterPopup.Filter_BreastLaterality_ComboBox.Items.GetItemAt(2))).IsEnabled = false;
+                if (LeftBreastRadio.IsChecked == true)
+                    FilterPopup.Filter_BreastLaterality_ComboBox.SelectedIndex = 0;
+                else if (RightBreastRadio.IsChecked == true)
+                    FilterPopup.Filter_BreastLaterality_ComboBox.SelectedIndex = 1;
+            }
+
+            FilterPopup.Filter_Targets_BoostToggleButton.IsChecked = BoostCheckBox.IsChecked;
+            FilterPopup.Filter_Targets_SPCNToggleButton.IsChecked = SPCNCheckBox.IsChecked;
+
+            FilterPopup.Filter_Targets_ChestWall.IsChecked = ChestWallCheckBox.IsChecked;
+            FilterPopup.Filter_Targets_ChestWall_EXP.IsChecked = ExpanderCheckBox.IsChecked;
+            FilterPopup.Filter_Targets_ChestWall_EXP_HS.IsChecked = ExpanderHSCheckBox.IsChecked;
+
+            FilterPopup.Filter_Setup_PBI.IsChecked = PBICheckBox.IsChecked;
+            FilterPopup.Filter_Setup_Prone.IsChecked = ProneCheckBox.IsChecked;
+
+            if (Technique3DCRT.IsChecked == true)
+            {
+                FilterPopup.Filter_Technique_ComboBox.SelectedIndex = 0;
+                FilterPopup.Filter_Technique_Hybrid.IsEnabled = false;
+            }
+            else if (TechniqueIMRT.IsChecked == true)
+                FilterPopup.Filter_Technique_ComboBox.SelectedIndex = 1;
+            else if (TechniqueVMAT.IsChecked == true)
+                FilterPopup.Filter_Technique_ComboBox.SelectedIndex = 2;
+            FilterPopup.Filter_Technique_Hybrid.IsChecked = HybridCheckBox.IsChecked;
+
+            FilterPopup.Filter_Technique_BreathHold.IsChecked = BreathHoldCheckBox.IsChecked;
+            FilterPopup.Filter_Technique_Tangential.IsChecked = TangentialCheckBox.IsChecked;
+            FilterPopup.Filter_Technique_Autoplanned.IsChecked = AutoPlannedCheckBox.IsChecked;
+        }
+
+        // applies filters to get filtered rows
+        public void ApplyFilterOnDataTable_FromPopup()
+        {
+            if (dataTable_dip == DataInspectorPolicy.DIP_NONE || dataTable_dts == DataTableStatus.DTS_NOTABLE)
+                return;
+            else if (dataTable_dip == DataInspectorPolicy.DIP_RESTRICTUSER && dataTable_dts == DataTableStatus.DTS_NOUSER)
+                return;
+
+            // Apply Filter on Laterality, Add Targets (Boost/SPCN) and Technique
+            string filterstring_Laterality;
+            if (FilterPopup.Filter_BreastLaterality_ComboBox.SelectedIndex == 2)
+                filterstring_Laterality = "BIL";
+            else if (FilterPopup.Filter_BreastLaterality_ComboBox.SelectedIndex == 0)
+                filterstring_Laterality = "L";
+            else
+                filterstring_Laterality = "R";
+
+            if (FilterPopup.Filter_Setup_PBI.IsChecked == true)
+                filterstring_Laterality += "|PBI";
+            if (FilterPopup.Filter_Setup_Prone.IsChecked == true)
+                filterstring_Laterality += "|PRONE";
+
+            string filterstring_Technique;
+            if (FilterPopup.Filter_Technique_ComboBox.SelectedIndex == 0)
+                filterstring_Technique = "3DCRT";
+            else if (FilterPopup.Filter_Technique_ComboBox.SelectedIndex == 1)
+                filterstring_Technique = "IMRT";
+            else if (FilterPopup.Filter_Technique_ComboBox.SelectedIndex == 2)
+                filterstring_Technique = "VMAT";
+            else
+                filterstring_Technique = "NA";
+
+            if (FilterPopup.Filter_Technique_Hybrid.IsChecked == true)
+                filterstring_Technique += "|HYBRID";
+            if (FilterPopup.Filter_Technique_BreathHold.IsChecked == true)
+                filterstring_Technique += "|BH";
+            if (FilterPopup.Filter_Technique_Tangential.IsChecked == true)
+                filterstring_Technique += "|TANG";
+            if (FilterPopup.Filter_Technique_Autoplanned.IsChecked == true)
+                filterstring_Technique += "|AUTO";
+
+            string filterstring_wAddTargets = "NO";
+            if (FilterPopup.Filter_Targets_BoostToggleButton.IsChecked == true)
+            {
+                filterstring_wAddTargets = "YES-BOOST";
+                if (FilterPopup.Filter_Targets_SPCNToggleButton.IsChecked == true)
+                    filterstring_wAddTargets += "|YES-SPCN";
+            }
+            else if (FilterPopup.Filter_Targets_SPCNToggleButton.IsChecked == true)
+                filterstring_wAddTargets = "YES-SPCN";
+
+            string filterString_Options = "NONE";
+            if (FilterPopup.Filter_Targets_ChestWall.IsChecked == true)
+                filterString_Options = "CHESTWALL";
+            if (FilterPopup.Filter_Targets_ChestWall_EXP.IsChecked == true)
+                filterString_Options += "|EXP";
+            if (FilterPopup.Filter_Targets_ChestWall_EXP_HS.IsChecked == true)
+                filterString_Options += "|EXP_HS";
+
+            string filterString = "LATERALITY ='" + filterstring_Laterality + "'" + "AND TECHNIQUE ='" + filterstring_Technique + "'" + "AND wADDTARGETS ='" + filterstring_wAddTargets + "'" + "AND OPTIONS ='" + filterString_Options + "'";
+            string filterString_UserRestricted = filterString + "AND USER='" + userName + "'";
+            if (dataTable_dip == DataInspectorPolicy.DIP_RESTRICTUSER && dataTable_dts == DataTableStatus.DTS_BASICUSER)  // restrict data to USER only
+                filterString += "AND USER='" + userName + "'";
+            DataRow[] datatable_filteredRows_All = dataTable.Select(filterString);
+            if (FilterPopup.Filter_Users_CurrentRadioButton.IsChecked == true)
+                filterString += "AND USER='" + userName + "'";
+            dataTable_filteredRows = dataTable.Select(filterString);
+            dataTable_filteredRows_CurrentUser = dataTable.Select(filterString_UserRestricted);
+
+            if (dataTable_filteredRows != null)
+            {
+                int ProtocolRecordsCount = dataTable_filteredRows.Count();
+                if (ProtocolRecordsCount > 0)
+                {
+                    CBRecords.Text = "(" + ProtocolRecordsCount.ToString("F0") + " RECS)";
+                    FilterPopup.AllAvailableFilterCountTextBlock.Text = datatable_filteredRows_All.Count().ToString("F0");
+                    if (dataTable_dip == DataInspectorPolicy.DIP_RESTRICTUSER && dataTable_dts == DataTableStatus.DTS_BASICUSER)  // restrict data to USER only
+                        FilterPopup.AllAvailableFilterCountTextBlock.Text += "(user restricted)";
+
+                    FilterPopup.CurrentUserFilterCountTextBlock.Text = dataTable_filteredRows_CurrentUser.Count().ToString("F0");
+                }
+                else
+                {
+                    CBRecords.Text = "(NO RECS)";
+                    FilterPopup.AllAvailableFilterCountTextBlock.Text = "0";
+                    FilterPopup.CurrentUserFilterCountTextBlock.Text = "0";
+                }
+            }
+            else
+            {
+                CBRecords.Text = "(NO RECS)";
+                FilterPopup.AllAvailableFilterCountTextBlock.Text = "0";
+                FilterPopup.CurrentUserFilterCountTextBlock.Text = "0";
+            }
+        }
+
         private void ComputeDVHData(ListView DataListView, Structure volume, DVHData dvhData, DVHData dvhDataVolCC)
         {
-            // Compute Results and Scores 
+            // Compute Results and Protocol Scores 
             foreach (var iItem in DataListView.Items)
             {
                 MyItem imyItem = (MyItem)iItem;
                 if (imyItem.Data.Contains("Avg"))   //Average dose
                 {
-                    double results = dvhData.MeanDose.Dose;
+                    double results = dvhData.MeanDose.Unit == DoseValue.DoseUnit.Gy ? dvhData.MeanDose.Dose : dvhData.MeanDose.Dose*100;
                     imyItem.Results = results.ToString("F2");
 
                     if (imyItem.Const[0] == '~')
@@ -2455,7 +2906,8 @@ namespace BreastWatch
                         if (imyItem.ReferenceDose > 0)
                             imyItem.ResultsPerc = (results * 100.0 / imyItem.ReferenceDose).ToString("F1");
 
-                        if (percdiff >= -5 && percdiff <= 5)
+                        //if (percdiff >= -5 && percdiff <= 5)
+                        if (percdiff >= -3 && percdiff <= 3)
                             imyItem.Score = 1;
                         else
                             imyItem.Score = 0;
@@ -2485,7 +2937,7 @@ namespace BreastWatch
                 }
                 else if (imyItem.Data.Contains("Max"))  //Maximum dose
                 {
-                    double results = dvhData.MaxDose.Dose;
+                    double results = dvhData.MaxDose.Unit == DoseValue.DoseUnit.Gy? dvhData.MaxDose.Dose : dvhData.MaxDose.Dose*100;
                     imyItem.Results = results.ToString("F2");
                     if (imyItem.ReferenceDose > 0)
                         imyItem.ResultsPerc = (results * 100.0 / imyItem.ReferenceDose).ToString("F1");
@@ -2518,7 +2970,7 @@ namespace BreastWatch
                     else
                         doseValueGy = Convert.ToDouble(imyItem.Data.TrimStart('V'));
 
-                    DoseValue DV = new DoseValue(doseValueGy, "Gy");
+                    DoseValue DV = new DoseValue(doseValueGy, DoseValue.DoseUnit.Gy);
                     double Organ_V = 0;
                     if (planSetup != null)
                     {
@@ -2563,7 +3015,7 @@ namespace BreastWatch
                     else
                         coverageValueGy = Convert.ToDouble(imyItem.Data.TrimStart('C'));
 
-                    DoseValue DV = new DoseValue(coverageValueGy, "Gy");
+                    DoseValue DV = new DoseValue(coverageValueGy, DoseValue.DoseUnit.Gy);
                     double Target_V = 0;
                     if (planSetup != null)
                     {
@@ -2681,7 +3133,7 @@ namespace BreastWatch
                     else
                         coverageValueGy = Convert.ToDouble(imyItem.Data.TrimStart('R'));
 
-                    DoseValue DV = new DoseValue(coverageValueGy, "Gy");
+                    DoseValue DV = new DoseValue(coverageValueGy, DoseValue.DoseUnit.Gy);
 
                     double conformity_ratio = 0;
                     double Target_V_Cm3 = 0;
@@ -2738,56 +3190,35 @@ namespace BreastWatch
                     }
                 }
             }
-            /*
-            // Compute CommunityScores
+
+            
+            // Compute CommunityScore
             if (dataTable_dip == DataInspectorPolicy.DIP_NONE || dataTable_dts == DataTableStatus.DTS_NOTABLE)
                 return;
             else if (dataTable_dip == DataInspectorPolicy.DIP_RESTRICTUSER && dataTable_dts == DataTableStatus.DTS_NOUSER)
                 return;
 
-            // Filter on Laterality, Add Targets (Boost/SPCN) and Technique
-            string filterstring_Laterality;
-            if (BilateralCheckBox.IsChecked == true)
-                filterstring_Laterality = "BIL";
-            else
-                filterstring_Laterality = LeftBreastRadio.IsChecked == true ? "L" : "R";
-
-            if (PBICheckBox.IsChecked == true)
-                filterstring_Laterality += "|PBI";
-            if (ProneCheckBox.IsChecked == true)
-                filterstring_Laterality += "|PRONE";
-
-            string filterstring_Technique = Technique3DCRT.IsChecked == true ? "3DCRT" : "VMAT";
-            if (BreathHoldCheckBox.IsChecked == true)
-                filterstring_Technique += "|BH";
-            string filterstring_wAddTargets = "NO";
-            if (BoostCheckBox.IsChecked == true && SPCNCheckBox.IsChecked == true)
-                filterstring_wAddTargets = "YES-BOOST|YES-SPCN";
-            else if (BoostCheckBox.IsChecked == true)
-                filterstring_wAddTargets = "YES-BOOST";
-            else if (SPCNCheckBox.IsChecked == true)
-                filterstring_wAddTargets = "YES-SPCN";
-
-            string filterString = "LATERALITY ='" + filterstring_Laterality + "'" + "AND TECHNIQUE ='" + filterstring_Technique + "'" + "AND wADDTARGETS ='" + filterstring_wAddTargets + "'";
-            if (dataTable_dip == DataInspectorPolicy.DIP_RESTRICTUSER && dataTable_dts == DataTableStatus.DTS_BASICUSER)  // restrict data to USER only
-                filterString += "AND USER='" + userName + "'";
-            DataRow[] filteredRows = dataTable.Select(filterString);
-            int ProtocolRecordsCount = filteredRows.Count();
-            foreach (var iItem in DataListView.Items)
+            if (dataTable_filteredRows != null)
             {
-                MyItem imyItem = (MyItem)iItem;
-                if (ProtocolRecordsCount > 0)
-                    imyItem.GetCommunityScore(filteredRows);
-                else
-                    imyItem.CommunityScore = -1;
+
+                int ProtocolRecordsCount = dataTable_filteredRows.Count();
+                foreach (var iItem in DataListView.Items)
+                {
+                    MyItem imyItem = (MyItem)iItem;
+                    if (ProtocolRecordsCount > 0)
+                        imyItem.GetCommunityScore(dataTable_filteredRows);
+                    else
+                        imyItem.CommunityScore = -1;
+                }
             }
-            */
         }
 
         public void FetchDVHData()
         {
             if (!this.IsVisible)
                 return;
+
+            ApplyFilterOnDataTable_FromPopup();
 
             TargetBreastDataListView.Items.Clear();
             TargetBoostDataListView.Items.Clear();
@@ -2821,7 +3252,6 @@ namespace BreastWatch
                 ContraBreastDataListView.IsEnabled = true;
             }
 
-
             if (ProtocolComboBox.SelectedIndex == 0) // START_RTOG1005
             {
                 if (BoostCheckBox.IsChecked == true)
@@ -2831,7 +3261,12 @@ namespace BreastWatch
                     TargetBreastDataListView.Items.Add(new MyItem { Data = "V43.2", Const = "<50", DTName = "BREAST_V43.2" });
                     TargetBreastDataListView.Items.Add(new MyItem { Data = "V44.8", Const = "<50" }); // this will not be saved in file
                     TargetBreastDataListView.Items.Add(new MyItem { Data = "V48", Const = "<30/35", DTName = "BREAST_V48" });
-                    TargetBreastDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "~40.05", ReferenceDose = 40.05, DTName = "BREAST_Avg" });
+                    // v1.0 TargetBreastDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "~40.05", ReferenceDose = 40.05, DTName = "BREAST_Avg" });
+                    if (TechniqueVMAT.IsChecked == true || TechniqueIMRT.IsChecked == true)
+                        TargetBreastDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "~41.2", ReferenceDose = 40.05, DTName = "BREAST_Avg" }); // v1.1
+                    else
+                        TargetBreastDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "~42.5", ReferenceDose = 40.05, DTName = "BREAST_Avg" }); // v1.1
+
                     TargetBreastDataListView.Items.Add(new MyItem { Data = "R38.05", Const = "<2", DTName = "BREAST_R38.05" });
 
                     TargetBoostDataListView.Items.Add(new MyItem { Data = "C45.6", Const = ">95", DTName = "BOOST_C45.6" });
@@ -2859,10 +3294,30 @@ namespace BreastWatch
                 TargetSPCDataListView.Items.Add(new MyItem { Data = "Max", Const = "<42.05", DTName = "SPCN_Max", ReferenceDose = 40.05 }); // 105%
                 TargetSPCDataListView.Items.Add(new MyItem { Data = "Avg", Const = "~40.05", DTName = "SPCN_Avg", ReferenceDose = 40.05 }); //
 
+                // IPSI LUNG
+
                 IpsiLungDataListView.Items.Add(new MyItem { Data = "V16", Const = "<15/20", DTName = "IPSI-LUNG_V16" });
                 IpsiLungDataListView.Items.Add(new MyItem { Data = "V8", Const = "<35/40", DTName = "IPSI-LUNG_V8" });
                 IpsiLungDataListView.Items.Add(new MyItem { Data = "V4", Const = "<50/55", DTName = "IPSI-LUNG_V4" });
-                IpsiLungDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<10", DTName = "IPSI-LUNG_Avg" }); // Not in protocol
+
+                IpsiLungDataListView.Items.Add(new MyItem { Data = "*V12", Const = "<15", DTName = "IPSI-LUNG_V12" }); // Not in protocol; v1.2 from START
+                // v1.0 IpsiLungDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<10", DTName = "IPSI-LUNG_Avg" }); // Not in protocol
+                if (SPCNCheckBox.IsChecked == true)
+                {
+                    if (TechniqueVMAT.IsChecked == true || TechniqueIMRT.IsChecked == true)
+                        IpsiLungDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<8", DTName = "IPSI-LUNG_Avg" }); // Not in protocol; v1.1
+                    else
+                        IpsiLungDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<7", DTName = "IPSI-LUNG_Avg" }); // Not in protocol; v1.1
+                }
+                else
+                {
+                    if (TechniqueVMAT.IsChecked == true || TechniqueIMRT.IsChecked == true)
+                        IpsiLungDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<7", DTName = "IPSI-LUNG_Avg" }); // Not in protocol; v1.1
+                    else
+                        IpsiLungDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<6", DTName = "IPSI-LUNG_Avg" }); // Not in protocol; v1.1
+                }
+
+                // CONTRA LUNG
 
                 if ((bool)BilateralCheckBox.IsChecked)
                 {
@@ -2870,50 +3325,109 @@ namespace BreastWatch
                     ContraLungDataListView.Items.Add(new MyItem { Data = "V16", Const = "<15/20" });
                     ContraLungDataListView.Items.Add(new MyItem { Data = "V8", Const = "<35/40" });
                     ContraLungDataListView.Items.Add(new MyItem { Data = "V4", Const = "<50/55", DTName = "CONTRA-LUNG_V4" });
-                    ContraLungDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<10", DTName = "CONTRA-LUNG_Avg" }); // Not in protocol
+
+                    ContraLungDataListView.Items.Add(new MyItem { Data = "*V12", Const = "<15", DTName = "CONTRA-LUNG_V12" }); // Not in protocol; v1.2 from START
+                    // v1.0 ContraLungDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<10", DTName = "CONTRA-LUNG_Avg" }); // Not in protocol
+                    if (SPCNCheckBox.IsChecked == true)
+                    {
+                        if (TechniqueVMAT.IsChecked == true || TechniqueIMRT.IsChecked == true)
+                            ContraLungDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<8", DTName = "CONTRA-LUNG_Avg" }); // Not in protocol; v1.1
+                        else
+                            ContraLungDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<7", DTName = "CONTRA-LUNG_Avg" }); // Not in protocol; v1.1
+                    }
+                    else
+                    {
+                        if (TechniqueVMAT.IsChecked == true || TechniqueIMRT.IsChecked == true)
+                            ContraLungDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<7", DTName = "CONTRA-LUNG_Avg" }); // Not in protocol; v1.1
+                        else
+                            ContraLungDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<6", DTName = "CONTRA-LUNG_Avg" }); // Not in protocol; v1.1
+                    }
                 }
                 else
                 {
                     ContraLungDataListView.Items.Add(new MyItem { Data = "V4", Const = "<10/15", DTName = "CONTRA-LUNG_V4" });
-                    ContraLungDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<3", DTName = "CONTRA-LUNG_Avg" }); // Not in protocol
+                    ContraLungDataListView.Items.Add(new MyItem { Data = "*V2.5", Const = "<15", DTName = "CONTRA-LUNG_V2.5" }); // Not in protocol; v1.2 from EUROPA
+                    // v1.0 ContraLungDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<3", DTName = "CONTRA-LUNG_Avg" }); // Not in protocol
+                    if (TechniqueVMAT.IsChecked == true || TechniqueIMRT.IsChecked == true)
+                        ContraLungDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<2", DTName = "CONTRA-LUNG_Avg" }); // Not in protocol; v1.1
+                    else
+                        ContraLungDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<0.3", DTName = "CONTRA-LUNG_Avg" }); // Not in protocol; v1.1
                 }
+
+                // CONTRA BREAST
 
                 if (!(bool)BilateralCheckBox.IsChecked)
                 {
-                    ContraBreastDataListView.Items.Add(new MyItem { Data = "*V4", Const = "<10/15", DTName = "CONTRA-BREAST_V4" }); // Not in protocol
+                    // v1.0 ContraBreastDataListView.Items.Add(new MyItem { Data = "*V4", Const = "<10/15", DTName = "CONTRA-BREAST_V4" }); // Not in protocol
+                    if (TechniqueVMAT.IsChecked == true || TechniqueIMRT.IsChecked == true)
+                        ContraBreastDataListView.Items.Add(new MyItem { Data = "*V4", Const = "<10/15", DTName = "CONTRA-BREAST_V4" }); // Not in protocol
+                    else
+                        ContraBreastDataListView.Items.Add(new MyItem { Data = "*V4", Const = "<1", DTName = "CONTRA-BREAST_V4" }); // Not in protocol; v1.1
+
                     ContraBreastDataListView.Items.Add(new MyItem { Data = "V2.4", Const = "<5", DTName = "CONTRA-BREAST_V2.4" });
                     ContraBreastDataListView.Items.Add(new MyItem { Data = "D%5", Const = "<1.44/2.4" });
                     ContraBreastDataListView.Items.Add(new MyItem { Data = "Max", Const = "<2.4/3.84", DTName = "CONTRA-BREAST_Max" });
-                    ContraBreastDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<3", DTName = "CONTRA-BREAST_Avg" }); //3 Gy Humanitas (not in protocol)
+                    // v1.0 ContraBreastDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<2.5", DTName = "CONTRA-BREAST_Avg" }); //3 Gy Humanitas (not in protocol)
+                    if (TechniqueVMAT.IsChecked == true || TechniqueIMRT.IsChecked == true)
+                        ContraBreastDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<1.5/2.5", DTName = "CONTRA-BREAST_Avg" }); // Not in protocol; v1.1
+                    else
+                        ContraBreastDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<0.5", DTName = "CONTRA-BREAST_Avg" }); // Not in protocol; v1.1
                 }
+
+                // HEART AND LEFT_CORONARY
 
                 if ((bool)LeftBreastRadio.IsChecked || (bool)BilateralCheckBox.IsChecked)
                 {
                     HeartDataListView.Items.Add(new MyItem { Data = "V20", Const = "<5", DTName = "HEART_V20" });
                     HeartDataListView.Items.Add(new MyItem { Data = "V16", Const = "<5", DTName = "HEART_V16" });
                     HeartDataListView.Items.Add(new MyItem { Data = "V8", Const = "<30/35", DTName = "HEART_V8" });
-                    HeartDataListView.Items.Add(new MyItem { Data = "*Max", Const = "<28", DTName = "HEART_Max" }); //70% Not in protocol
+                    // v1.0 HeartDataListView.Items.Add(new MyItem { Data = "*Max", Const = "<28", DTName = "HEART_Max" }); //70% Not in protocol
+                    if (TechniqueVMAT.IsChecked == true || TechniqueIMRT.IsChecked == true)
+                        HeartDataListView.Items.Add(new MyItem { Data = "*Max", Const = "<20", DTName = "HEART_Max" }); //Not in protocol; v1.1
+                    else
+                        HeartDataListView.Items.Add(new MyItem { Data = "*Max", Const = "<25", DTName = "HEART_Max" }); //Not in protocol; v1.1
+
+                    HeartDataListView.Items.Add(new MyItem { Data = "*V10", Const = "<5", DTName = "HEART_V10" }); // Not in protocol; v1.2 from START
+                    HeartDataListView.Items.Add(new MyItem { Data = "*V2", Const = "<30", DTName = "HEART_V2" }); // Not in protocol; v1.2 from START
                     HeartDataListView.Items.Add(new MyItem { Data = "Avg", Const = "<3.2/4", DTName = "HEART_Avg" });
 
                     LeftCoronaryDataListView.Items.Add(new MyItem { Data = "Max", Const = "<16", DTName = "LEFT-COR_Max" }); // Not in protocol
-                    LeftCoronaryDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<8", DTName = "LEFT-COR_Avg" }); // Not in protocol
+                    // v1.0 LeftCoronaryDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<8", DTName = "LEFT-COR_Avg" }); // Not in protocol
+                    if (TechniqueVMAT.IsChecked == true || TechniqueIMRT.IsChecked == true)
+                        LeftCoronaryDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<6", DTName = "LEFT-COR_Avg" }); // Not in protocol: v1.1
+                    else
+                        LeftCoronaryDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<3", DTName = "LEFT-COR_Avg" }); // Not in protocol: v1.1
                 }
                 else if ((bool)RightBreastRadio.IsChecked)
                 {
                     HeartDataListView.Items.Add(new MyItem { Data = "V20", Const = "<0", DTName = "HEART_V20" });
                     HeartDataListView.Items.Add(new MyItem { Data = "V16", Const = "<0", DTName = "HEART_V16" });
                     HeartDataListView.Items.Add(new MyItem { Data = "V8", Const = "<10/15", DTName = "HEART_V8" });
-                    HeartDataListView.Items.Add(new MyItem { Data = "*Max", Const = "<16", DTName = "HEART_Max" });  // Not in protocol
+                    // v1.0 HeartDataListView.Items.Add(new MyItem { Data = "*Max", Const = "<16", DTName = "HEART_Max" });  // Not in protocol
+                    if (TechniqueVMAT.IsChecked == true || TechniqueIMRT.IsChecked == true)
+                        HeartDataListView.Items.Add(new MyItem { Data = "*Max", Const = "<10", DTName = "HEART_Max" });  // Not in protocol; v1.1
+                    else
+                        HeartDataListView.Items.Add(new MyItem { Data = "*Max", Const = "<4", DTName = "HEART_Max" });  // Not in protocol; v1.1
+
+                    HeartDataListView.Items.Add(new MyItem { Data = "*V10", Const = "<5", DTName = "HEART_V10" }); // Not in protocol; v1.2 from START
+                    HeartDataListView.Items.Add(new MyItem { Data = "*V2", Const = "<30", DTName = "HEART_V2" }); // Not in protocol; v1.2 from START
                     HeartDataListView.Items.Add(new MyItem { Data = "Avg", Const = "<3.2", DTName = "HEART_Avg" });
 
                     LeftCoronaryDataListView.Items.Add(new MyItem { Data = "Max", Const = "<16", DTName = "LEFT-COR_Max" }); // Not in protocol
-                    LeftCoronaryDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<5", DTName = "LEFT-COR_Avg" }); // Not in protocol
+                    // v1.0 LeftCoronaryDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<5", DTName = "LEFT-COR_Avg" }); // Not in protocol
+                    if (TechniqueVMAT.IsChecked == true || TechniqueIMRT.IsChecked == true)
+                        LeftCoronaryDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<3", DTName = "LEFT-COR_Avg" }); // Not in protocol; v1.1
+                    else
+                        LeftCoronaryDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<0.3", DTName = "LEFT-COR_Avg" }); // Not in protocol; v1.1
                 }
 
-                if (TargetSPCList.SelectedIndex != -1)
+                // THYROID
+
+                if (SPCNCheckBox.IsChecked == true)
                 {
                     ThyroidDataListView.Items.Add(new MyItem { Data = "*V24", Const = "<50", DTName = "THYROID_V24" }); // Not in protocol
-                    ThyroidDataListView.Items.Add(new MyItem { Data = "*Max", Const = "<42.05", DTName = "THYROID_Max" }); // 105% not in protocol
+                    // v.1.0 ThyroidDataListView.Items.Add(new MyItem { Data = "*Max", Const = "<42.05", DTName = "THYROID_Max" }); // 105% not in protocol
+                    ThyroidDataListView.Items.Add(new MyItem { Data = "*Max", Const = "<41.3", DTName = "THYROID_Max" }); // 103% not in protocol; v1.1
                     ThyroidDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<20", DTName = "THYROID_Avg" }); // Not in protocol
                 }
                 else
@@ -2923,11 +3437,62 @@ namespace BreastWatch
                     ThyroidDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<1", DTName = "THYROID_Avg" }); // Not in protocol
                 }
 
-                EsophagusDataListView.Items.Add(new MyItem { Data = "*V20", Const = "<10", DTName = "ESOPHAGUS_V20" }); // Not in protocol
-                EsophagusDataListView.Items.Add(new MyItem { Data = "*Max", Const = "<42.05", DTName = "ESOPHAGUS_Max" }); // 105% not in protocol
-                EsophagusDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<10", DTName = "ESOPHAGUS_Avg" }); // Not in protocol
+                // ESOPHAGUS
 
-                if((bool)BilateralCheckBox.IsChecked)
+                // v1.0 EsophagusDataListView.Items.Add(new MyItem { Data = "*V20", Const = "<10", DTName = "ESOPHAGUS_V20" }); // Not in protocol
+                if (SPCNCheckBox.IsChecked == true)
+                {
+                    if ((bool)LeftBreastRadio.IsChecked || (bool)BilateralCheckBox.IsChecked)
+                        EsophagusDataListView.Items.Add(new MyItem { Data = "*V20", Const = "<10", DTName = "ESOPHAGUS_V20" }); // Not in protocol; v1.1
+                    else if ((bool)RightBreastRadio.IsChecked)
+                        EsophagusDataListView.Items.Add(new MyItem { Data = "*V20", Const = "<5", DTName = "ESOPHAGUS_V20" }); // Not in protocol; v1.1
+                }
+                else
+                {
+                    if ((bool)LeftBreastRadio.IsChecked || (bool)BilateralCheckBox.IsChecked)
+                        EsophagusDataListView.Items.Add(new MyItem { Data = "*V20", Const = "<0", DTName = "ESOPHAGUS_V20" }); // Not in protocol; v1.1
+                    else if ((bool)RightBreastRadio.IsChecked)
+                        EsophagusDataListView.Items.Add(new MyItem { Data = "*V20", Const = "<0", DTName = "ESOPHAGUS_V20" }); // Not in protocol; v1.1
+                }
+
+                // v1.0 EsophagusDataListView.Items.Add(new MyItem { Data = "*Max", Const = "<42.05", DTName = "ESOPHAGUS_Max" }); // 105% not in protocol
+                if (SPCNCheckBox.IsChecked == true)
+                {
+                    if ((bool)LeftBreastRadio.IsChecked || (bool)BilateralCheckBox.IsChecked)
+                        EsophagusDataListView.Items.Add(new MyItem { Data = "*Max", Const = "<38", DTName = "ESOPHAGUS_Max" }); // Not in protocol; v1.1
+                    else if ((bool)RightBreastRadio.IsChecked)
+                        EsophagusDataListView.Items.Add(new MyItem { Data = "*Max", Const = "<30", DTName = "ESOPHAGUS_Max" }); // Not in protocol; v1.1
+                }
+                else
+                {
+                    if (TechniqueVMAT.IsChecked == true || TechniqueIMRT.IsChecked == true)
+                        EsophagusDataListView.Items.Add(new MyItem { Data = "*Max", Const = "<6", DTName = "ESOPHAGUS_Max" }); // Not in protocol; v1.1
+                    else
+                        EsophagusDataListView.Items.Add(new MyItem { Data = "*Max", Const = "<0", DTName = "ESOPHAGUS_Max" }); // Not in protocol; v1.1
+                }
+
+
+                // v1.0 EsophagusDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<10", DTName = "ESOPHAGUS_Avg" }); // Not in protocol
+                if (SPCNCheckBox.IsChecked == true)
+                {
+                    if ((bool)LeftBreastRadio.IsChecked || (bool)BilateralCheckBox.IsChecked)
+                        EsophagusDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<8", DTName = "ESOPHAGUS_Avg" }); // Not in protocol; v1.1
+                    else if ((bool)RightBreastRadio.IsChecked)
+                        EsophagusDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<7", DTName = "ESOPHAGUS_Avg" }); // Not in protocol; v1.1
+                }
+                else
+                {
+                    if (TechniqueVMAT.IsChecked == true || TechniqueIMRT.IsChecked == true)
+                        EsophagusDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<3", DTName = "ESOPHAGUS_Avg" }); // Not in protocol; v1.1
+                    else
+                        EsophagusDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<0.5", DTName = "ESOPHAGUS_Avg" }); // Not in protocol; v1.1
+                }
+
+                // LIVER
+
+                // v1.0
+                /*
+                if ((bool)BilateralCheckBox.IsChecked)
                 {
                     LiverDataListView.Items.Add(new MyItem { Data = "*V20", Const = "<10", DTName = "LIVER_V20" }); // Not in protocol
                     LiverDataListView.Items.Add(new MyItem { Data = "*Max", Const = "<40.05", DTName = "LIVER_Max" }); // 100% not in protocol
@@ -2957,6 +3522,38 @@ namespace BreastWatch
                     StomachDataListView.Items.Add(new MyItem { Data = "*Max", Const = "<8", DTName = "STOMACH_Max" }); // 20% not in protocol
                     StomachDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<2", DTName = "STOMACH_Avg" }); // 5% not in protocol
                 }
+                */
+                // v1.1
+                if ((bool)BilateralCheckBox.IsChecked)
+                {
+                    LiverDataListView.Items.Add(new MyItem { Data = "*V20", Const = "<2", DTName = "LIVER_V20" }); // Not in protocol; v1.1
+                    LiverDataListView.Items.Add(new MyItem { Data = "*Max", Const = "<38", DTName = "LIVER_Max" }); // Not in protocol; v1.1
+                    LiverDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<3.5", DTName = "LIVER_Avg" }); // Not in protocol; v1.1
+
+                    StomachDataListView.Items.Add(new MyItem { Data = "*V20", Const = "<2", DTName = "STOMACH_V20" }); // Not in protocol; v1.1
+                    StomachDataListView.Items.Add(new MyItem { Data = "*Max", Const = "<16", DTName = "STOMACH_Max" }); // Not in protocol; v1.1
+                    StomachDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<2", DTName = "STOMACH_Avg" }); // Not in protocol; v1.1
+                }
+                else if ((bool)LeftBreastRadio.IsChecked)
+                {
+                    LiverDataListView.Items.Add(new MyItem { Data = "*V20", Const = "<0", DTName = "LIVER_V20" }); // Not in protocol; v1.1
+                    LiverDataListView.Items.Add(new MyItem { Data = "*Max", Const = "<8", DTName = "LIVER_Max" }); // Not in protocol; v1.1
+                    LiverDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<1", DTName = "LIVER_Avg" }); // Not in protocol; v1.1
+
+                    StomachDataListView.Items.Add(new MyItem { Data = "*V20", Const = "<2", DTName = "STOMACH_V20" }); // Not in protocol; v1.1
+                    StomachDataListView.Items.Add(new MyItem { Data = "*Max", Const = "<16", DTName = "STOMACH_Max" }); // Not in protocol; v1.1
+                    StomachDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<2", DTName = "STOMACH_Avg" }); // Not in protocol; v1.1
+                }
+                else if ((bool)RightBreastRadio.IsChecked)
+                {
+                    LiverDataListView.Items.Add(new MyItem { Data = "*V20", Const = "<2", DTName = "LIVER_V20" }); // Not in protocol; v1.1
+                    LiverDataListView.Items.Add(new MyItem { Data = "*Max", Const = "<38", DTName = "LIVER_Max" }); // Not in protocol; v1.1
+                    LiverDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<3.5", DTName = "LIVER_Avg" }); // Not in protocol; v1.1
+
+                    StomachDataListView.Items.Add(new MyItem { Data = "*V20", Const = "0", DTName = "STOMACH_V20" }); // Not in protocol; v1.1
+                    StomachDataListView.Items.Add(new MyItem { Data = "*Max", Const = "<4", DTName = "STOMACH_Max" }); // Not in protocol; v1.1
+                    StomachDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<1", DTName = "STOMACH_Avg" }); // Not in protocol; v1.1
+                }
 
                 SkinDataListView.Items.Add(new MyItem { Data = "*Max", Const = "<41.3" }); // 103% not in protocol
                 SkinDataListView.Items.Add(new MyItem { Data = "*Dc1", Const = "<40.05" }); // 100% not in protocol
@@ -2974,17 +3571,17 @@ namespace BreastWatch
                     //v1.0 TargetBreastDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "~26", DTName = "BREAST_Avg", ReferenceDose = 26 });
                     //v1.0 TargetBreastDataListView.Items.Add(new MyItem { Data = "R24.7", Const = "<2", DTName = "BREAST_R24.7" });
                     string const1 = "50", const2 = "35", const3 = "27.3", const4 = "1.5";
-                    if(TechniqueVMAT.IsChecked == true || TechniqueIMRT.IsChecked == true)
+                    if (TechniqueVMAT.IsChecked == true || TechniqueIMRT.IsChecked == true)
                     {
                         const1 = "24";
                         const2 = "22";
                         const3 = "26.5";
                         const4 = "1.2";
                     }
-                    TargetBreastDataListView.Items.Add(new MyItem { Data = "*V27.3", Const = "<"+const1, DTName = "BREAST_V27.3" });  // NEW
-                    TargetBreastDataListView.Items.Add(new MyItem { Data = "*V27.82", Const = "<"+const2, DTName = "BREAST_V27.82" });  // NEW
-                    TargetBreastDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "~"+const3, DTName = "BREAST_Avg", ReferenceDose = 26 }); // NEW
-                    TargetBreastDataListView.Items.Add(new MyItem { Data = "*R24.7", Const = "<"+const4, DTName = "BREAST_R24.7" }); // NEW
+                    TargetBreastDataListView.Items.Add(new MyItem { Data = "*V27.3", Const = "<" + const1, DTName = "BREAST_V27.3" });  // NEW
+                    TargetBreastDataListView.Items.Add(new MyItem { Data = "*V27.82", Const = "<" + const2, DTName = "BREAST_V27.82" });  // NEW
+                    TargetBreastDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "~" + const3, DTName = "BREAST_Avg", ReferenceDose = 26 }); // NEW
+                    TargetBreastDataListView.Items.Add(new MyItem { Data = "*R24.7", Const = "<" + const4, DTName = "BREAST_R24.7" }); // NEW
 
 
                     TargetBoostDataListView.Items.Add(new MyItem { Data = "C28.5", Const = ">95", DTName = "BOOST_C28.5" });
@@ -3003,7 +3600,7 @@ namespace BreastWatch
                     string const5 = "1.4";
                     if (TechniqueVMAT.IsChecked == true || TechniqueIMRT.IsChecked == true)
                         const5 = "1.1";
-                    TargetBreastDataListView.Items.Add(new MyItem { Data = "*R24.7", Const = "<"+const5, DTName = "BREAST_R24.7" });
+                    TargetBreastDataListView.Items.Add(new MyItem { Data = "*R24.7", Const = "<" + const5, DTName = "BREAST_R24.7" });
 
                     TargetBoostDataListView.Items.Add(new MyItem { Data = "C24.7", Const = ">95" });
                     TargetBoostDataListView.Items.Add(new MyItem { Data = "V27.3", Const = "<5" });
@@ -3028,17 +3625,17 @@ namespace BreastWatch
                     const8 = "4.5";
                 }
 
-                IpsiLungDataListView.Items.Add(new MyItem { Data = "*V5", Const = "<"+const6, DTName = "IPSI-LUNG_V5" }); // NEW
-                IpsiLungDataListView.Items.Add(new MyItem { Data = "*V3", Const = "<"+const7, DTName = "IPSI-LUNG_V3" }); // NEW
-                IpsiLungDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<"+const8, DTName = "IPSI-LUNG_Avg" }); // NEW
+                IpsiLungDataListView.Items.Add(new MyItem { Data = "*V5", Const = "<" + const6, DTName = "IPSI-LUNG_V5" }); // NEW
+                IpsiLungDataListView.Items.Add(new MyItem { Data = "*V3", Const = "<" + const7, DTName = "IPSI-LUNG_V3" }); // NEW
+                IpsiLungDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<" + const8, DTName = "IPSI-LUNG_Avg" }); // NEW
 
                 if ((bool)BilateralCheckBox.IsChecked)
                 {
                     // clone IpsiLungDataListView
                     ContraLungDataListView.Items.Add(new MyItem { Data = "V8", Const = "<15" });
-                    ContraLungDataListView.Items.Add(new MyItem { Data = "*V5", Const = "<"+const6 }); // Not in protocol
-                    ContraLungDataListView.Items.Add(new MyItem { Data = "*V3", Const = "<"+const7, DTName = "CONTRA-LUNG_V3" }); // NEW
-                    ContraLungDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<"+const8, DTName = "CONTRA-LUNG_Avg" }); // NEW
+                    ContraLungDataListView.Items.Add(new MyItem { Data = "*V5", Const = "<" + const6 }); // Not in protocol
+                    ContraLungDataListView.Items.Add(new MyItem { Data = "*V3", Const = "<" + const7, DTName = "CONTRA-LUNG_V3" }); // NEW
+                    ContraLungDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<" + const8, DTName = "CONTRA-LUNG_Avg" }); // NEW
                 }
                 else
                 {
@@ -3050,8 +3647,8 @@ namespace BreastWatch
                     }
                     //v1.0 ContraLungDataListView.Items.Add(new MyItem { Data = "*V3", Const = "<10", DTName = "CONTRA-LUNG_V3" });
                     //v1.0 ContraLungDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<2", DTName = "CONTRA-LUNG_Avg" }); // Not in protocol
-                    ContraLungDataListView.Items.Add(new MyItem { Data = "*V3", Const = "<"+const9, DTName = "CONTRA-LUNG_V3" }); // NEW
-                    ContraLungDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<"+const10, DTName = "CONTRA-LUNG_Avg" }); // NEW
+                    ContraLungDataListView.Items.Add(new MyItem { Data = "*V3", Const = "<" + const9, DTName = "CONTRA-LUNG_V3" }); // NEW
+                    ContraLungDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<" + const10, DTName = "CONTRA-LUNG_Avg" }); // NEW
                 }
 
                 if (!(bool)BilateralCheckBox.IsChecked)
@@ -3066,9 +3663,9 @@ namespace BreastWatch
                     //v1.0 ContraBreastDataListView.Items.Add(new MyItem { Data = "*V3", Const = "<10", DTName = "CONTRA-BREAST_V3" }); // Not in protocol
                     //v1.0 ContraBreastDataListView.Items.Add(new MyItem { Data = "*Max", Const = "<1.6", DTName = "CONTRA-BREAST_Max" });
                     //v1.0 ContraBreastDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<2", DTName = "CONTRA-BREAST_Avg" }); // Not in protocol
-                    ContraBreastDataListView.Items.Add(new MyItem { Data = "*V3", Const = "<"+const11, DTName = "CONTRA-BREAST_V3" }); // NEW
-                    ContraBreastDataListView.Items.Add(new MyItem { Data = "*Max", Const = "<"+const12, DTName = "CONTRA-BREAST_Max" }); // NEW
-                    ContraBreastDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<"+const13, DTName = "CONTRA-BREAST_Avg" }); // NEW
+                    ContraBreastDataListView.Items.Add(new MyItem { Data = "*V3", Const = "<" + const11, DTName = "CONTRA-BREAST_V3" }); // NEW
+                    ContraBreastDataListView.Items.Add(new MyItem { Data = "*Max", Const = "<" + const12, DTName = "CONTRA-BREAST_Max" }); // NEW
+                    ContraBreastDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<" + const13, DTName = "CONTRA-BREAST_Avg" }); // NEW
                 }
 
                 if ((bool)LeftBreastRadio.IsChecked || (bool)BilateralCheckBox.IsChecked)
@@ -3080,19 +3677,19 @@ namespace BreastWatch
                         const14 = "0.6";
                         const15 = "2";
                     }
-                    HeartDataListView.Items.Add(new MyItem { Data = "*V10", Const = "<"+const14, DTName = "HEART_V10" }); // Not in protocol
+                    HeartDataListView.Items.Add(new MyItem { Data = "*V10", Const = "<" + const14, DTName = "HEART_V10" }); // Not in protocol
                     HeartDataListView.Items.Add(new MyItem { Data = "V7", Const = "<5", DTName = "HEART_V7" });
                     HeartDataListView.Items.Add(new MyItem { Data = "V1.5", Const = "<30", DTName = "HEART_V1.5" });
                     HeartDataListView.Items.Add(new MyItem { Data = "Max", Const = "<27", DTName = "HEART_Max" }); // Not in protocol (UK consensus)
                     //v1.0 HeartDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<2", DTName = "HEART_Avg" });
-                    HeartDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<"+const15, DTName = "HEART_Avg" }); // NEW
+                    HeartDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<" + const15, DTName = "HEART_Avg" }); // NEW
 
                     LeftCoronaryDataListView.Items.Add(new MyItem { Data = "Max", Const = "<12", DTName = "LEFT-COR_Max" }); // Not in protocol
                     //v1.0 LeftCoronaryDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<5", DTName = "LEFT-COR_Avg" }); // Not in protocol
                     string const16 = "2";
                     if (TechniqueVMAT.IsChecked == true || TechniqueIMRT.IsChecked == true)
                         const16 = "5";
-                    LeftCoronaryDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<"+const16, DTName = "LEFT-COR_Avg" }); // NEW
+                    LeftCoronaryDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<" + const16, DTName = "LEFT-COR_Avg" }); // NEW
                 }
                 else if ((bool)RightBreastRadio.IsChecked)
                 {
@@ -3103,12 +3700,12 @@ namespace BreastWatch
                         const14 = "0.1";
                         const15 = "1.5";
                     }
-                    HeartDataListView.Items.Add(new MyItem { Data = "*V10", Const = "<"+const14, DTName = "HEART_V10" }); // NEW
+                    HeartDataListView.Items.Add(new MyItem { Data = "*V10", Const = "<" + const14, DTName = "HEART_V10" }); // NEW
                     HeartDataListView.Items.Add(new MyItem { Data = "V7", Const = "<5", DTName = "HEART_V7" });
                     HeartDataListView.Items.Add(new MyItem { Data = "V1.5", Const = "<30", DTName = "HEART_V1.5" });
                     HeartDataListView.Items.Add(new MyItem { Data = "Max", Const = "<10", DTName = "HEART_Max" }); // Not in protocol
                     //v1.0 HeartDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<2", DTName = "HEART_Avg" });
-                    HeartDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<"+const15, DTName = "HEART_Avg" }); // NEW
+                    HeartDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<" + const15, DTName = "HEART_Avg" }); // NEW
 
                     LeftCoronaryDataListView.Items.Add(new MyItem { Data = "Max", Const = "<12", DTName = "LEFT-COR_Max" }); // Not in protocol
                     //v1.0 LeftCoronaryDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<3.5", DTName = "LEFT-COR_Avg" }); // Not in protocol
@@ -3147,9 +3744,9 @@ namespace BreastWatch
                         const18 = "26";
                         const19 = "2.5";
                     }
-                    LiverDataListView.Items.Add(new MyItem { Data = "*V13", Const = "<"+const17, DTName = "LIVER_V13" }); // NEW
-                    LiverDataListView.Items.Add(new MyItem { Data = "*Max", Const = "<"+const18, DTName = "LIVER_Max" }); // NEW
-                    LiverDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<"+const19, DTName = "LIVER_Avg" }); // NEW
+                    LiverDataListView.Items.Add(new MyItem { Data = "*V13", Const = "<" + const17, DTName = "LIVER_V13" }); // NEW
+                    LiverDataListView.Items.Add(new MyItem { Data = "*Max", Const = "<" + const18, DTName = "LIVER_Max" }); // NEW
+                    LiverDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<" + const19, DTName = "LIVER_Avg" }); // NEW
 
                     StomachDataListView.Items.Add(new MyItem { Data = "*V13", Const = "<5", DTName = "STOMACH_V13" }); // Not in protocol
                     StomachDataListView.Items.Add(new MyItem { Data = "*Max", Const = "<16", DTName = "STOMACH_Max" }); // 60% not in protocol
@@ -3355,10 +3952,28 @@ namespace BreastWatch
                 TargetSPCDataListView.Items.Add(new MyItem { Data = "*Max", Const = "<42.85", ReferenceDose = 40.05 }); // 107%
                 TargetSPCDataListView.Items.Add(new MyItem { Data = "Avg", Const = "~40.05", ReferenceDose = 40.05 }); //
 
+                // IPSI LUNG
+
                 IpsiLungDataListView.Items.Add(new MyItem { Data = "V18", Const = "<15", DTName = "IPSI-LUNG_V18" });
                 IpsiLungDataListView.Items.Add(new MyItem { Data = "*V8", Const = "<35/40", DTName = "IPSI-LUNG_V8" }); // From RTOG1005 not in protocol
                 IpsiLungDataListView.Items.Add(new MyItem { Data = "*V4", Const = "<50/55", DTName = "IPSI-LUNG_V4" }); // From RTOG1005 not in protocol
-                IpsiLungDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<10", DTName = "IPSI-LUNG_Avg" }); // Not in protocol
+                // v1.0 IpsiLungDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<10", DTName = "IPSI-LUNG_Avg" }); // Not in protocol
+                if (SPCNCheckBox.IsChecked == true)
+                {
+                    if (TechniqueVMAT.IsChecked == true || TechniqueIMRT.IsChecked == true)
+                        IpsiLungDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<8", DTName = "IPSI-LUNG_Avg" }); // Not in protocol; v1.1
+                    else
+                        IpsiLungDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<7", DTName = "IPSI-LUNG_Avg" }); // Not in protocol; v1.1
+                }
+                else
+                {
+                    if (TechniqueVMAT.IsChecked == true || TechniqueIMRT.IsChecked == true)
+                        IpsiLungDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<7", DTName = "IPSI-LUNG_Avg" }); // Not in protocol; v1.1
+                    else
+                        IpsiLungDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<6", DTName = "IPSI-LUNG_Avg" }); // Not in protocol; v1.1
+                }
+
+                // CONTRA LUNG
 
                 if ((bool)BilateralCheckBox.IsChecked)
                 {
@@ -3366,48 +3981,96 @@ namespace BreastWatch
                     ContraLungDataListView.Items.Add(new MyItem { Data = "V18", Const = "<15" });
                     ContraLungDataListView.Items.Add(new MyItem { Data = "*V8", Const = "<35/40" }); // From RTOG1005 not in protocol
                     ContraLungDataListView.Items.Add(new MyItem { Data = "*V4", Const = "<50/55", DTName = "CONTRA-LUNG_V4" }); // From RTOG1005 not in protocol
-                    ContraLungDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<10", DTName = "CONTRA-LUNG_Avg" }); // Not in protocol
+                    // v1.0 ContraLungDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<10", DTName = "CONTRA-LUNG_Avg" }); // Not in protocol
+                    if (SPCNCheckBox.IsChecked == true)
+                    {
+                        if (TechniqueVMAT.IsChecked == true || TechniqueIMRT.IsChecked == true)
+                            ContraLungDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<8", DTName = "CONTRA-LUNG_Avg" }); // Not in protocol; v1.1
+                        else
+                            ContraLungDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<7", DTName = "CONTRA-LUNG_Avg" }); // Not in protocol; v1.1
+                    }
+                    else
+                    {
+                        if (TechniqueVMAT.IsChecked == true || TechniqueIMRT.IsChecked == true)
+                            ContraLungDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<7", DTName = "CONTRA-LUNG_Avg" }); // Not in protocol; v1.1
+                        else
+                            ContraLungDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<6", DTName = "CONTRA-LUNG_Avg" }); // Not in protocol; v1.1
+                    }
+
                 }
                 else
-                    {
+                {
                     ContraLungDataListView.Items.Add(new MyItem { Data = "*V4", Const = "<10/15", DTName = "CONTRA-LUNG_V4" }); // From RTOG1005 not in protocol
                     ContraLungDataListView.Items.Add(new MyItem { Data = "V2.5", Const = "<15", DTName = "CONTRA-LUNG_V2.5" });
-                    ContraLungDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<3", DTName = "CONTRA-LUNG_Avg" }); // Not in protocol
-                    }
+                    // v1.0 ContraLungDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<3", DTName = "CONTRA-LUNG_Avg" }); // Not in protocol
+                    if (TechniqueVMAT.IsChecked == true || TechniqueIMRT.IsChecked == true)
+                        ContraLungDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<2", DTName = "CONTRA-LUNG_Avg" }); // Not in protocol; v1.1
+                    else
+                        ContraLungDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<0.3", DTName = "CONTRA-LUNG_Avg" }); // Not in protocol; v1.1
+                }
+
+                // CONTRA BREAST
 
                 if (!(bool)BilateralCheckBox.IsChecked)
                 {
-                    ContraBreastDataListView.Items.Add(new MyItem { Data = "*V4", Const = "<10/15", DTName = "CONTRA-BREAST_V4" }); // Not in protocol
+                    // v1.0 ContraBreastDataListView.Items.Add(new MyItem { Data = "*V4", Const = "<10/15", DTName = "CONTRA-BREAST_V4" }); // Not in protocol
+                    if (TechniqueVMAT.IsChecked == true || TechniqueIMRT.IsChecked == true)
+                        ContraBreastDataListView.Items.Add(new MyItem { Data = "*V4", Const = "<10/15", DTName = "CONTRA-BREAST_V4" }); // Not in protocol
+                    else
+                        ContraBreastDataListView.Items.Add(new MyItem { Data = "*V4", Const = "<1", DTName = "CONTRA-BREAST_V4" }); // Not in protocol; v1.1
                     ContraBreastDataListView.Items.Add(new MyItem { Data = "*V2.4", Const = "<5", DTName = "CONTRA-BREAST_V2.4" }); // From RTOG1005 not in protocol
                     ContraBreastDataListView.Items.Add(new MyItem { Data = "*Max", Const = "<2.4/3.84", DTName = "CONTRA-BREAST_Max" }); // From RTOG1005 not in protocol
                     ContraBreastDataListView.Items.Add(new MyItem { Data = "Avg", Const = "<1.5", DTName = "CONTRA-BREAST_Avg" });
                 }
 
+                // HEART AND LEFT_CORONARY
+
                 if ((bool)LeftBreastRadio.IsChecked || (bool)BilateralCheckBox.IsChecked)
                 {
                     HeartDataListView.Items.Add(new MyItem { Data = "V10", Const = "<5", DTName = "HEART_V10" });
                     HeartDataListView.Items.Add(new MyItem { Data = "V2", Const = "<30", DTName = "HEART_V2" });
-                    HeartDataListView.Items.Add(new MyItem { Data = "*Max", Const = "<28", DTName = "HEART_Max" }); //70% Not in protocol
+                    // v1.0 HeartDataListView.Items.Add(new MyItem { Data = "*Max", Const = "<28", DTName = "HEART_Max" }); //70% Not in protocol
+                    if (TechniqueVMAT.IsChecked == true || TechniqueIMRT.IsChecked == true)
+                        HeartDataListView.Items.Add(new MyItem { Data = "*Max", Const = "<20", DTName = "HEART_Max" }); //Not in protocol; v1.1
+                    else
+                        HeartDataListView.Items.Add(new MyItem { Data = "*Max", Const = "<25", DTName = "HEART_Max" }); //Not in protocol; v1.1
+
                     HeartDataListView.Items.Add(new MyItem { Data = "Avg", Const = "<2.5", DTName = "HEART_Avg" });
 
                     LeftCoronaryDataListView.Items.Add(new MyItem { Data = "Max", Const = "<16", DTName = "LEFT-COR_Max" }); // Not in protocol
-                    LeftCoronaryDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<8", DTName = "LEFT-COR_Avg" }); // Not in protocol
+                    // v1.0 LeftCoronaryDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<8", DTName = "LEFT-COR_Avg" }); // Not in protocol
+                    if (TechniqueVMAT.IsChecked == true || TechniqueIMRT.IsChecked == true)
+                        LeftCoronaryDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<6", DTName = "LEFT-COR_Avg" }); // Not in protocol: v1.1
+                    else
+                        LeftCoronaryDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<3", DTName = "LEFT-COR_Avg" }); // Not in protocol: v1.1
                 }
                 else if ((bool)RightBreastRadio.IsChecked)
                 {
                     HeartDataListView.Items.Add(new MyItem { Data = "V10", Const = "<5", DTName = "HEART_V10" });
                     HeartDataListView.Items.Add(new MyItem { Data = "V2", Const = "<30", DTName = "HEART_V2" });
-                    HeartDataListView.Items.Add(new MyItem { Data = "*Max", Const = "<16", DTName = "HEART_Max" });  // Not in protocol
+                    // v1.0 HeartDataListView.Items.Add(new MyItem { Data = "*Max", Const = "<16", DTName = "HEART_Max" });  // Not in protocol
+                    if (TechniqueVMAT.IsChecked == true || TechniqueIMRT.IsChecked == true)
+                        HeartDataListView.Items.Add(new MyItem { Data = "*Max", Const = "<10", DTName = "HEART_Max" });  // Not in protocol; v1.1
+                    else
+                        HeartDataListView.Items.Add(new MyItem { Data = "*Max", Const = "<4", DTName = "HEART_Max" });  // Not in protocol; v1.1
+
                     HeartDataListView.Items.Add(new MyItem { Data = "Avg", Const = "<2.5", DTName = "HEART_Avg" });
 
                     LeftCoronaryDataListView.Items.Add(new MyItem { Data = "Max", Const = "<16", DTName = "LEFT-COR_Max" }); // Not in protocol
-                    LeftCoronaryDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<5", DTName = "LEFT-COR_Avg" }); // Not in protocol
+                    // v1.0 LeftCoronaryDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<5", DTName = "LEFT-COR_Avg" }); // Not in protocol
+                    if (TechniqueVMAT.IsChecked == true || TechniqueIMRT.IsChecked == true)
+                        LeftCoronaryDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<3", DTName = "LEFT-COR_Avg" }); // Not in protocol; v1.1
+                    else
+                        LeftCoronaryDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<0.3", DTName = "LEFT-COR_Avg" }); // Not in protocol; v1.1
                 }
 
-                if (TargetSPCList.SelectedIndex != -1)
+                // THYROID
+
+                if (SPCNCheckBox.IsChecked == true)
                 {
                     ThyroidDataListView.Items.Add(new MyItem { Data = "*V24", Const = "<50", DTName = "THYROID_V24" }); // Not in protocol
-                    ThyroidDataListView.Items.Add(new MyItem { Data = "*Max", Const = "<42.05", DTName = "THYROID_Max" }); // 105% not in protocol
+                    // v.1.0 ThyroidDataListView.Items.Add(new MyItem { Data = "*Max", Const = "<42.05", DTName = "THYROID_Max" }); // 105% not in protocol
+                    ThyroidDataListView.Items.Add(new MyItem { Data = "*Max", Const = "<41.3", DTName = "THYROID_Max" }); // 103% not in protocol; v1.1
                     ThyroidDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<20", DTName = "THYROID_Avg" }); // Not in protocol
                 }
                 else
@@ -3417,10 +4080,61 @@ namespace BreastWatch
                     ThyroidDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<1", DTName = "THYROID_Avg" }); // Not in protocol
                 }
 
-                EsophagusDataListView.Items.Add(new MyItem { Data = "*V20", Const = "<10", DTName = "ESOPHAGUS_V20" }); // Not in protocol
-                EsophagusDataListView.Items.Add(new MyItem { Data = "*Max", Const = "<42.05", DTName = "ESOPHAGUS_Max" }); // 105% not in protocol
-                EsophagusDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<10",DTName = "ESOPHAGUS_Avg" }); // Not in protocol
+                // ESOPHAGUS
 
+                // v1.0 EsophagusDataListView.Items.Add(new MyItem { Data = "*V20", Const = "<10", DTName = "ESOPHAGUS_V20" }); // Not in protocol
+                if (SPCNCheckBox.IsChecked == true)
+                {
+                    if ((bool)LeftBreastRadio.IsChecked || (bool)BilateralCheckBox.IsChecked)
+                        EsophagusDataListView.Items.Add(new MyItem { Data = "*V20", Const = "<10", DTName = "ESOPHAGUS_V20" }); // Not in protocol; v1.1
+                    else if ((bool)RightBreastRadio.IsChecked)
+                        EsophagusDataListView.Items.Add(new MyItem { Data = "*V20", Const = "<5", DTName = "ESOPHAGUS_V20" }); // Not in protocol; v1.1
+                }
+                else
+                {
+                    if ((bool)LeftBreastRadio.IsChecked || (bool)BilateralCheckBox.IsChecked)
+                        EsophagusDataListView.Items.Add(new MyItem { Data = "*V20", Const = "<0", DTName = "ESOPHAGUS_V20" }); // Not in protocol; v1.1
+                    else if ((bool)RightBreastRadio.IsChecked)
+                        EsophagusDataListView.Items.Add(new MyItem { Data = "*V20", Const = "<0", DTName = "ESOPHAGUS_V20" }); // Not in protocol; v1.1
+                }
+
+                // v1.0 EsophagusDataListView.Items.Add(new MyItem { Data = "*Max", Const = "<42.05", DTName = "ESOPHAGUS_Max" }); // 105% not in protocol
+                if (SPCNCheckBox.IsChecked == true)
+                {
+                    if ((bool)LeftBreastRadio.IsChecked || (bool)BilateralCheckBox.IsChecked)
+                        EsophagusDataListView.Items.Add(new MyItem { Data = "*Max", Const = "<38", DTName = "ESOPHAGUS_Max" }); // Not in protocol; v1.1
+                    else if ((bool)RightBreastRadio.IsChecked)
+                        EsophagusDataListView.Items.Add(new MyItem { Data = "*Max", Const = "<30", DTName = "ESOPHAGUS_Max" }); // Not in protocol; v1.1
+                }
+                else
+                {
+                    if (TechniqueVMAT.IsChecked == true || TechniqueIMRT.IsChecked == true)
+                        EsophagusDataListView.Items.Add(new MyItem { Data = "*Max", Const = "<6", DTName = "ESOPHAGUS_Max" }); // Not in protocol; v1.1
+                    else
+                        EsophagusDataListView.Items.Add(new MyItem { Data = "*Max", Const = "<0", DTName = "ESOPHAGUS_Max" }); // Not in protocol; v1.1
+                }
+
+
+                // v1.0 EsophagusDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<10", DTName = "ESOPHAGUS_Avg" }); // Not in protocol
+                if (SPCNCheckBox.IsChecked == true)
+                {
+                    if ((bool)LeftBreastRadio.IsChecked || (bool)BilateralCheckBox.IsChecked)
+                        EsophagusDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<8", DTName = "ESOPHAGUS_Avg" }); // Not in protocol; v1.1
+                    else if ((bool)RightBreastRadio.IsChecked)
+                        EsophagusDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<7", DTName = "ESOPHAGUS_Avg" }); // Not in protocol; v1.1
+                }
+                else
+                {
+                    if (TechniqueVMAT.IsChecked == true || TechniqueIMRT.IsChecked == true)
+                        EsophagusDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<3", DTName = "ESOPHAGUS_Avg" }); // Not in protocol; v1.1
+                    else
+                        EsophagusDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<0.5", DTName = "ESOPHAGUS_Avg" }); // Not in protocol; v1.1
+                }
+
+                // LIVER
+
+                // v1.0
+                /*
                 if ((bool)BilateralCheckBox.IsChecked)
                 {
                     LiverDataListView.Items.Add(new MyItem { Data = "*V20", Const = "<10", DTName = "LIVER_V20" }); // Not in protocol
@@ -3450,6 +4164,38 @@ namespace BreastWatch
                     StomachDataListView.Items.Add(new MyItem { Data = "*V20", Const = "0", DTName = "STOMACH_V20" }); // Not in protocol
                     StomachDataListView.Items.Add(new MyItem { Data = "*Max", Const = "<8", DTName = "STOMACH_Max" }); // 20% not in protocol
                     StomachDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<2", DTName = "STOMACH_Avg" }); // 5% not in protocol
+                }
+                */
+                // v1.1
+                if ((bool)BilateralCheckBox.IsChecked)
+                {
+                    LiverDataListView.Items.Add(new MyItem { Data = "*V20", Const = "<2", DTName = "LIVER_V20" }); // Not in protocol; v1.1
+                    LiverDataListView.Items.Add(new MyItem { Data = "*Max", Const = "<38", DTName = "LIVER_Max" }); // Not in protocol; v1.1
+                    LiverDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<3.5", DTName = "LIVER_Avg" }); // Not in protocol; v1.1
+
+                    StomachDataListView.Items.Add(new MyItem { Data = "*V20", Const = "<2", DTName = "STOMACH_V20" }); // Not in protocol; v1.1
+                    StomachDataListView.Items.Add(new MyItem { Data = "*Max", Const = "<16", DTName = "STOMACH_Max" }); // Not in protocol; v1.1
+                    StomachDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<2", DTName = "STOMACH_Avg" }); // Not in protocol; v1.1
+                }
+                else if ((bool)LeftBreastRadio.IsChecked)
+                {
+                    LiverDataListView.Items.Add(new MyItem { Data = "*V20", Const = "<0", DTName = "LIVER_V20" }); // Not in protocol; v1.1
+                    LiverDataListView.Items.Add(new MyItem { Data = "*Max", Const = "<8", DTName = "LIVER_Max" }); // Not in protocol; v1.1
+                    LiverDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<1", DTName = "LIVER_Avg" }); // Not in protocol; v1.1
+
+                    StomachDataListView.Items.Add(new MyItem { Data = "*V20", Const = "<2", DTName = "STOMACH_V20" }); // Not in protocol; v1.1
+                    StomachDataListView.Items.Add(new MyItem { Data = "*Max", Const = "<16", DTName = "STOMACH_Max" }); // Not in protocol; v1.1
+                    StomachDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<2", DTName = "STOMACH_Avg" }); // Not in protocol; v1.1
+                }
+                else if ((bool)RightBreastRadio.IsChecked)
+                {
+                    LiverDataListView.Items.Add(new MyItem { Data = "*V20", Const = "<2", DTName = "LIVER_V20" }); // Not in protocol; v1.1
+                    LiverDataListView.Items.Add(new MyItem { Data = "*Max", Const = "<38", DTName = "LIVER_Max" }); // Not in protocol; v1.1
+                    LiverDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<3.5", DTName = "LIVER_Avg" }); // Not in protocol; v1.1
+
+                    StomachDataListView.Items.Add(new MyItem { Data = "*V20", Const = "0", DTName = "STOMACH_V20" }); // Not in protocol; v1.1
+                    StomachDataListView.Items.Add(new MyItem { Data = "*Max", Const = "<4", DTName = "STOMACH_Max" }); // Not in protocol; v1.1
+                    StomachDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<1", DTName = "STOMACH_Avg" }); // Not in protocol; v1.1
                 }
 
                 SkinDataListView.Items.Add(new MyItem { Data = "*Max", Const = "<41.3" }); // 103% not in protocol
@@ -3596,7 +4342,7 @@ namespace BreastWatch
                 IpsiLungDataListView.Items.Add(new MyItem { Data = "*V3", Const = "<50", DTName = "IPSI-LUNG_V3" }); // Not in protocol
                 IpsiLungDataListView.Items.Add(new MyItem { Data = "*Avg", Const = "<6.5", DTName = "IPSI-LUNG_Avg" }); // Not in protocol
 
-                if((bool)BilateralCheckBox.IsChecked)
+                if ((bool)BilateralCheckBox.IsChecked)
                 {
                     ContraLungDataListView.Items.Add(new MyItem { Data = "V10", Const = "<20" });
                     ContraLungDataListView.Items.Add(new MyItem { Data = "*V8", Const = "<15" }); // Not in protocol
@@ -3816,7 +4562,7 @@ namespace BreastWatch
                 }
             }
 
-            ComputeBWScore();
+            ComputeScores();
 
             // start Plan-sanity-check v2.0
             isPscOk = true;
@@ -3839,29 +4585,53 @@ namespace BreastWatch
                 TargetBoostLabel.FontWeight = System.Windows.FontWeights.Bold;
             else
                 TargetBoostLabel.FontWeight = System.Windows.FontWeights.Normal;
+            
+            ApplyFilterDefaults_OnPopup();
+            FetchDVHData();
+        }
+
+        private void SPCNCheckBox_Click(object sender, RoutedEventArgs e)
+        {
+            if (SPCNCheckBox.IsChecked == true)
+                TargetSPCLabel.FontWeight = System.Windows.FontWeights.Bold;
+            else
+                TargetSPCLabel.FontWeight = System.Windows.FontWeights.Normal;
+
+            ApplyFilterDefaults_OnPopup();
             FetchDVHData();
         }
 
         private void LeftBreastRadio_Click(object sender, RoutedEventArgs e)
         {
+            ApplyFilterDefaults_OnPopup();
             FetchDVHData();
         }
 
         private void RightBreastRadio_Click(object sender, RoutedEventArgs e)
         {
+            ApplyFilterDefaults_OnPopup();
             FetchDVHData();
         }
 
         private void BilateralCheckBox_Click(object sender, RoutedEventArgs e)
         {
+            ApplyFilterDefaults_OnPopup();
+            FetchDVHData();
+        }
+
+        private void ProneCheckBox_Click(object sender, RoutedEventArgs e)
+        {
+            ApplyFilterDefaults_OnPopup();
             FetchDVHData();
         }
 
         private void BreathHoldCheckBox_Click(object sender, RoutedEventArgs e)
         {
+            ApplyFilterDefaults_OnPopup();
             FetchDVHData();
         }
 
+        /*
         private void TargetSPCList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (TargetSPCList.SelectedIndex == -1)
@@ -3875,6 +4645,7 @@ namespace BreastWatch
             }
             TargetBreastList_SelectionChanged(sender, e);
         }
+        */
 
         private void TargetBreastList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
@@ -3897,25 +4668,32 @@ namespace BreastWatch
                 ExpanderHSCheckBox.IsEnabled = true;
                 OptsExpander.Header = "opts*";
             }
-
+            ApplyFilterDefaults_OnPopup();
+            FetchDVHData();
         }
 
         private void ExpanderCheckBox_Checked(object sender, RoutedEventArgs e)
         {
             ExpanderHSCheckBox.IsChecked = false;
+            ApplyFilterDefaults_OnPopup();
+            FetchDVHData();
         }
 
         private void ExpanderHSCheckBox_Checked(object sender, RoutedEventArgs e)
         {
             ExpanderCheckBox.IsChecked = false;
+            ApplyFilterDefaults_OnPopup();
+            FetchDVHData();
         }
 
         private void PBICheckClick(object sender, RoutedEventArgs e)
         {
             BoostCheckBox.IsChecked = false;
+            ApplyFilterDefaults_OnPopup();
             FetchDVHData();
         }
 
+        // This is used by PSC only
         private void AcquireDataTableBeamData()
         {
             planBeamsTotalMUs.Clear();
@@ -3936,9 +4714,23 @@ namespace BreastWatch
                     if (ProneCheckBox.IsChecked == true)
                         filterstring_Laterality += "|PRONE";
 
-                    string filterstring_Technique = Technique3DCRT.IsChecked == true ? "3DCRT" : "VMAT";
+                    string filterstring_Technique;
+                    if ((bool)TechniqueVMAT.IsChecked)
+                        filterstring_Technique = "VMAT";
+                    else if ((bool)Technique3DCRT.IsChecked)
+                        filterstring_Technique = "3DCRT";
+                    else if ((bool)TechniqueIMRT.IsChecked)
+                        filterstring_Technique = "IMRT";
+                    else
+                        filterstring_Technique = "NA";
+
+                    if ((bool)HybridCheckBox.IsChecked)
+                        filterstring_Technique += "|HYBRID";
                     if (BreathHoldCheckBox.IsChecked == true)
                         filterstring_Technique += "|BH";
+                    if (TangentialCheckBox.IsChecked == true)
+                        filterstring_Technique += "|TANG";
+
                     string filterstring_wAddTargets = "NO";
                     if (BoostCheckBox.IsChecked == true && SPCNCheckBox.IsChecked == true)
                         filterstring_wAddTargets = "YES-BOOST|YES-SPCN";
@@ -4000,6 +4792,27 @@ namespace BreastWatch
 
             PBICheckBox.IsChecked = false;
 
+            // SPC/N available only for RTOG1005
+            if (ProtocolComboBox.SelectedIndex == 0)
+            {
+                SPCNCheckBox.IsEnabled = true;
+                if (TargetSPCList.SelectedItem != null)
+                {
+                    if (TechniqueVMAT.IsChecked == true)
+                        SPCNCheckBox.IsChecked = true;
+                    else if (TechniqueIMRT.IsChecked == true)
+                        SPCNCheckBox.IsChecked = true;
+                    else if (Technique3DCRT.IsChecked == true && SUMCheckBox.IsChecked == true)
+                        SPCNCheckBox.IsChecked = true;
+                }
+            }
+            else
+            {
+                SPCNCheckBox.IsEnabled = false;
+                SPCNCheckBox.IsChecked = false;
+            }
+
+            // Boost available only for RTOG1005, NHSFF and NHS FAST
             if (ProtocolComboBox.SelectedIndex <= 2)
             {
                 BoostCheckBox.IsEnabled = true;
@@ -4096,7 +4909,7 @@ namespace BreastWatch
             {
                 if (ProtocolComboBox.SelectedIndex != (int)dataTable_dtc)
                 {
-                    dataTable.Clear();
+                    dataTable.Reset();
                     dataTable_dts = DataTableStatus.DTS_NOTABLE;
                     planBeamsTotalMUs.Clear();
                 }
@@ -4144,6 +4957,7 @@ namespace BreastWatch
                             {
                                 dataTable.Columns.Add(header);
                             }
+                            
                             while (!sr.EndOfStream)
                             {
                                 string[] rows = sr.ReadLine().Split('\t');
@@ -4155,21 +4969,28 @@ namespace BreastWatch
                                 dataTable.Rows.Add(dr);
                             }
 
-                            DataRow[] recordsUser = dataTable.Select("USER='" + userName + "'");
-                            int dataTable_UserContribCount = recordsUser.Count();
-                            int dataTable_Count = dataTable.Rows.Count;
-                            if (dataTable_UserContribCount == 0)
-                                dataTable_dts = DataTableStatus.DTS_NOUSER;
-                            else if (dataTable_UserContribCount < (dataTable.Rows.Count * DataInspectorRestrictUserPercentage) / 100.0)
-                                dataTable_dts = DataTableStatus.DTS_BASICUSER;
+                            if (dataTable.Rows.Count == 0)
+                            {
+                                string message = "Export File is empty.\nAppend at least one plan to Export File to use Data Inspector.\nIf this is the first time please check the write headers checkbox.";
+                                MessageBox.Show(message, "Breast Watch", MessageBoxButton.OK, MessageBoxImage.Error);
+                                isExportFileOK = false;
+                            }
                             else
-                                dataTable_dts = DataTableStatus.DTS_TRUEBELIEVER;
+                            {
 
-                            RecordsInFile.Text = "RECS = " + dataTable_UserContribCount + "/" + dataTable_Count;
-                            dataTable_dtc = (DataTableContents)ProtocolComboBox.SelectedIndex;
+                                DataRow[] recordsUser = dataTable.Select("USER='" + userName + "'");
+                                int dataTable_UserContribCount = recordsUser.Count();
+                                int dataTable_Count = dataTable.Rows.Count;
+                                if (dataTable_UserContribCount == 0)
+                                    dataTable_dts = DataTableStatus.DTS_NOUSER;
+                                else if (dataTable_UserContribCount < (dataTable.Rows.Count * DataInspectorRestrictUserPercentage) / 100.0)
+                                    dataTable_dts = DataTableStatus.DTS_BASICUSER;
+                                else
+                                    dataTable_dts = DataTableStatus.DTS_TRUEBELIEVER;
 
-
-                            
+                                RecordsInFile.Text = "RECS = " + dataTable_UserContribCount + "/" + dataTable_Count;
+                                dataTable_dtc = (DataTableContents)ProtocolComboBox.SelectedIndex;
+                            }
                         }
                         catch (Exception)
                         {
@@ -4183,7 +5004,15 @@ namespace BreastWatch
             // end read CSV file
 
             if (isExportFileOK == false)
+            {
                 dataTable_dts = DataTableStatus.DTS_NOTABLE;
+                TogglePopupButton.IsEnabled = false;
+            }
+            else
+            {
+                ApplyFilterDefaults_OnPopup();
+                TogglePopupButton.IsEnabled = true;
+            }
 
             // Update table icon
             switch (dataTable_dts)
@@ -4199,12 +5028,28 @@ namespace BreastWatch
                     TableError.Visibility = Visibility.Hidden;
                     TableMissing.Visibility = Visibility.Visible;
                     TableOK.Visibility = Visibility.Hidden;
+                    if (dataTable_dip == DataInspectorPolicy.DIP_RESTRICTUSER || dataTable_dip == DataInspectorPolicy.DIP_NONE)
+                    {
+                        string message = "Current User not present in Export File. Data Inspector not available.";
+                        MessageBox.Show(message, "Breast Watch", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    }
+                    else if (dataTable_dip == DataInspectorPolicy.DIP_ALLTB)
+                    {
+                        string message = "Current User not present in Export File.";
+                        MessageBox.Show(message, "Breast Watch", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    }
+
                     break;
                 case DataTableStatus.DTS_BASICUSER:
                     Table.Visibility = Visibility.Visible;
                     TableError.Visibility = Visibility.Hidden;
                     TableMissing.Visibility = Visibility.Hidden;
                     TableOK.Visibility = Visibility.Hidden;
+                    if (dataTable_dip == DataInspectorPolicy.DIP_RESTRICTUSER || dataTable_dip == DataInspectorPolicy.DIP_NONE)
+                    {
+                        string message = "Applying User Restriction to Export File Plan Library.";
+                        MessageBox.Show(message, "Breast Watch", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    }
                     break;
                 case DataTableStatus.DTS_TRUEBELIEVER:
                     Table.Visibility = Visibility.Hidden;
@@ -4231,9 +5076,12 @@ namespace BreastWatch
                     TableMissing.Visibility = Visibility.Hidden;
                     TableOK.Visibility = Visibility.Visible;
                 }
+                else if (dataTable_dip == DataInspectorPolicy.DIP_RESTRICTUSER)
+                {
+                }
             }
 
-            FetchDVHData();
+                FetchDVHData();
         }
 
         private void ComputeMUMetric()
@@ -4274,16 +5122,8 @@ namespace BreastWatch
             }
         }
 
-
-        private void MainCommentWindow_Activated(object sender, EventArgs e)
-        {
-            ComputeMUMetric();
-
-            ProtocolComboBox_SelectionChanged(this, null);
-        }
-
         private bool PscCheckPlanSum(PlanSum plansumtocheck, ref string PscCheckString)
-    {
+        {
         bool rv = true;
 
         foreach (PlanSetup plantocheck in planSum.PlanSetups)
@@ -4523,41 +5363,14 @@ namespace BreastWatch
         if (string.IsNullOrEmpty(SelectedItemDTName))
             return;
 
-        // Filter on Laterality, Add Targets (Boost/SPCN) and Technique
-        string filterstring_Laterality;
-        if (BilateralCheckBox.IsChecked == true)
-            filterstring_Laterality = "BIL";
-        else
-            filterstring_Laterality = LeftBreastRadio.IsChecked == true ? "L" : "R";
-
-         if (PBICheckBox.IsChecked == true)
-            filterstring_Laterality += "|PBI";
-         if (ProneCheckBox.IsChecked == true)
-            filterstring_Laterality += "|PRONE";
-
-        string filterstring_Technique = Technique3DCRT.IsChecked == true ? "3DCRT" : "VMAT";
-        if (BreathHoldCheckBox.IsChecked == true)
-            filterstring_Technique += "|BH";
-        string filterstring_wAddTargets = "NO";
-        if (BoostCheckBox.IsChecked == true && SPCNCheckBox.IsChecked == true)
-            filterstring_wAddTargets = "YES-BOOST|YES-SPCN";
-        else if (BoostCheckBox.IsChecked == true)
-            filterstring_wAddTargets = "YES-BOOST";
-        else if (SPCNCheckBox.IsChecked == true)
-            filterstring_wAddTargets = "YES-SPCN";
-
-        string filterString = "LATERALITY ='" + filterstring_Laterality + "'" + "AND TECHNIQUE ='" + filterstring_Technique + "'" + "AND wADDTARGETS ='" + filterstring_wAddTargets + "'";
-        if(dataTable_dip == DataInspectorPolicy.DIP_RESTRICTUSER && dataTable_dts == DataTableStatus.DTS_BASICUSER)  // restrict data to USER only
-                filterString +=  "AND USER='" + userName + "'";
-        DataRow[] filteredRows = dataTable.Select(filterString);
-        int ProtocolRecordsCount = filteredRows.Count();
+        int ProtocolRecordsCount = dataTable_filteredRows.Count();
         
         // Plot data
         if (ProtocolRecordsCount > 0)
             {
             double d;
             List<double> values = new List<double>();
-            values = filteredRows.AsEnumerable().Where(x => double.TryParse(x[SelectedItemDTName].ToString(),out d) == true).Select(x => Convert.ToDouble(x[SelectedItemDTName])).ToList();
+            values = dataTable_filteredRows.AsEnumerable().Where(x => double.TryParse(x[SelectedItemDTName].ToString(),out d) == true).Select(x => Convert.ToDouble(x[SelectedItemDTName])).ToList();
             if (values.Count > 0)
                 {
                 PropPopupWindow prpwindow = new PropPopupWindow(values, itemSelected);
@@ -4569,9 +5382,6 @@ namespace BreastWatch
                     prpwindow.Left = point.X - prpwindow.Width + 12;
                     prpwindow.Top = point.Y - 12;
 
-                    if (dataTable_dip == DataInspectorPolicy.DIP_ALLTB || dataTable_dts == DataTableStatus.DTS_TRUEBELIEVER)
-                        prpwindow.USERToggleButton.Visibility = Visibility.Hidden;
-
                     prpwindow.Owner = this;
                     prpwindow.ShowDialog();
                     }
@@ -4580,97 +5390,42 @@ namespace BreastWatch
         // end Plot data
         }
 
-        private void PlanScore_MouseDown(object sender, MouseButtonEventArgs e)
+        private void ScoreColorsComboBox_DropDownClosed(object sender, EventArgs e)
         {
-            if (dataTable_dip == DataInspectorPolicy.DIP_NONE || dataTable_dts == DataTableStatus.DTS_NOTABLE)
-                return;
-            else if (dataTable_dip == DataInspectorPolicy.DIP_RESTRICTUSER && dataTable_dts == DataTableStatus.DTS_NOUSER)
-                return;
+            StyleSelector myListViewItemStyleSelector;
 
-            // Filter on Laterality, Add Targets (Boost/SPCN) and Technique
-            string filterstring_Laterality;
-            if (BilateralCheckBox.IsChecked == true)
-                filterstring_Laterality = "BIL";
+
+            if (ScoreStyleComboBox.SelectedIndex == 1)
+                myListViewItemStyleSelector = new mListViewItemCommunityStyleSelector();
+            else if (ScoreStyleComboBox.SelectedIndex == 2)
+                myListViewItemStyleSelector = new mListViewItemCommunityGradientStyleSelector();
             else
-                filterstring_Laterality = LeftBreastRadio.IsChecked == true ? "L" : "R";
+                myListViewItemStyleSelector = new mListViewItemProtocolStyleSelector();
 
-            if (PBICheckBox.IsChecked == true)
-                filterstring_Laterality += "|PBI";
-            if (ProneCheckBox.IsChecked == true)
-                filterstring_Laterality += "|PRONE";
+            TargetBreastDataListView.ItemContainerStyleSelector = myListViewItemStyleSelector;
+            TargetBoostDataListView.ItemContainerStyleSelector = myListViewItemStyleSelector;
+            TargetSPCDataListView.ItemContainerStyleSelector = myListViewItemStyleSelector;
 
-            string filterstring_Technique = Technique3DCRT.IsChecked == true ? "3DCRT" : "VMAT";
-            if (BreathHoldCheckBox.IsChecked == true)
-                filterstring_Technique += "|BH";
-            string filterstring_wAddTargets = "NO";
-            if (BoostCheckBox.IsChecked == true && SPCNCheckBox.IsChecked == true)
-                filterstring_wAddTargets = "YES-BOOST|YES-SPCN";
-            else if (BoostCheckBox.IsChecked == true)
-                filterstring_wAddTargets = "YES-BOOST";
-            else if (SPCNCheckBox.IsChecked == true)
-                filterstring_wAddTargets = "YES-SPCN";
+            IpsiLungDataListView.ItemContainerStyleSelector = myListViewItemStyleSelector;
+            ContraLungDataListView.ItemContainerStyleSelector = myListViewItemStyleSelector;
+            HeartDataListView.ItemContainerStyleSelector = myListViewItemStyleSelector;
+            LeftCoronaryDataListView.ItemContainerStyleSelector = myListViewItemStyleSelector;
+            ContraBreastDataListView.ItemContainerStyleSelector = myListViewItemStyleSelector;
+            ThyroidDataListView.ItemContainerStyleSelector = myListViewItemStyleSelector;
+            EsophagusDataListView.ItemContainerStyleSelector = myListViewItemStyleSelector;
+            LiverDataListView.ItemContainerStyleSelector = myListViewItemStyleSelector;
+            StomachDataListView.ItemContainerStyleSelector = myListViewItemStyleSelector;
+            SkinDataListView.ItemContainerStyleSelector = myListViewItemStyleSelector;
+        }
 
-            string filterString = "LATERALITY ='" + filterstring_Laterality + "'" + "AND TECHNIQUE ='" + filterstring_Technique + "'" + "AND wADDTARGETS ='" + filterstring_wAddTargets + "'";
-            if (dataTable_dip == DataInspectorPolicy.DIP_RESTRICTUSER && dataTable_dts == DataTableStatus.DTS_BASICUSER)  // restrict data to USER only
-                filterString += "AND USER='" + userName + "'";
-            DataRow[] filteredRows = dataTable.Select(filterString);
-            int ProtocolRecordsCount = filteredRows.Count();
-            if (ProtocolRecordsCount > 0)
-            {
-                PropPopupWindow.ScoreTails ItemScoreTails;
+        private void MainCommentWindow_Loaded(object sender, RoutedEventArgs e)
+        {
+            ComputeMUMetric();
 
-                mListViewItemCommunityStyleSelector myListViewItemCommunityStyleSelector = new mListViewItemCommunityStyleSelector();
+            ProtocolComboBox_SelectionChanged(this, null);
 
-                IpsiLungDataListView.ItemContainerStyleSelector = myListViewItemCommunityStyleSelector;
-
-                foreach (var iItem in IpsiLungDataListView.Items)
-                {
-                    MyItem imyItem = (MyItem)iItem;
-                    string SelectedItemDTName = imyItem.DTName;
-                    if (string.IsNullOrEmpty(SelectedItemDTName))
-                        continue;
-
-                    double itemSelectedResults = Convert.ToDouble(imyItem.Results);
-
-                    if (imyItem.Const == "NOC")
-                        ItemScoreTails = ScoreTails.ST_BOTH;
-                    else if (imyItem.Data.Contains("C"))
-                        ItemScoreTails = ScoreTails.ST_POSITIVE;
-                    else
-                        ItemScoreTails = ScoreTails.ST_NEGATIVE;
-
-                    double k;
-                    List<double> values = new List<double>();
-                    values = filteredRows.AsEnumerable().Where(x => double.TryParse(x[SelectedItemDTName].ToString(), out k) == true).Select(x => Convert.ToDouble(x[SelectedItemDTName])).ToList();
-                    if (values.Count > 0)
-                    {
-                        double minValue = 0, maxValue = 0, avgValue = 0, devstValue = 0;
-                        double cbscore = 0;
-                        minValue = values.Min();
-                        maxValue = values.Max();
-                        avgValue = values.Average();
-                        devstValue = Math.Sqrt(values.Sum(d => Math.Pow(d - avgValue, 2)) / values.Count());
-
-                        if (ItemScoreTails == ScoreTails.ST_POSITIVE)
-                            cbscore = values.Count(d => itemSelectedResults >= d) * 100 / values.Count();
-                        else if (ItemScoreTails == ScoreTails.ST_NEGATIVE)
-                            cbscore = values.Count(d => itemSelectedResults <= d) * 100 / values.Count();
-                        else if (ItemScoreTails == ScoreTails.ST_BOTH)
-                        {
-                            if (itemSelectedResults <= avgValue + devstValue && itemSelectedResults >= avgValue - devstValue)
-                                cbscore = 100;
-                            else if (itemSelectedResults <= avgValue + 2 * devstValue && itemSelectedResults >= avgValue - 2 * devstValue)
-                                cbscore = 50;
-                            else if (itemSelectedResults <= avgValue + 3 * devstValue && itemSelectedResults >= avgValue - 3 * devstValue)
-                                cbscore = 25;
-                            else
-                                cbscore = 0;
-                        }
-
-                        imyItem.CommunityScore = cbscore;
-                    }
-                }
-            }
+            ApplyFilterDefaults_OnPopup();
+            FetchDVHData();
         }
     }
 }

@@ -16,6 +16,7 @@ using System.Windows.Controls;
 using System.Collections.Generic;
 using VMS.TPS.Common.Model.API;
 using VMS.TPS.Common.Model.Types;
+using System.Security.Cryptography.X509Certificates;
 
 //[assembly: ESAPIScript(IsWriteable = true)]
 
@@ -54,11 +55,31 @@ namespace VMS.TPS
             return TagContent;
         }
 
+        public struct BreastProtocol
+        {
+            public string ProtocolName;
+            public enum BreastTreatmentType { BTT_WholeBreast = 0, BTT_PartialBreast };
+            public BreastTreatmentType Protocol_BTT;
+            public bool BoostSupported;
+            public bool NSPCSupported;
+
+            public double PrescriptionDose_Gy;
+            public double BoostPrescriptionDose_Gy;
+        }
+    
         public void Execute(ScriptContext context)//, Window window)
         {
             PlanSetup planSetup = context.PlanSetup;
             Patient pat = context.Patient;
             PlanSum planSum = null;
+
+            BreastProtocol[] protocols = new BreastProtocol[5];
+            protocols[0].ProtocolName = "RTOG";
+            protocols[0].Protocol_BTT = BreastProtocol.BreastTreatmentType.BTT_WholeBreast;
+            protocols[0].BoostSupported = true;
+            protocols[0].NSPCSupported = true;
+            protocols[0].PrescriptionDose_Gy = 40.05;
+            protocols[0].BoostPrescriptionDose_Gy = 48;
 
             if (planSetup == null)
             {
@@ -133,6 +154,7 @@ namespace VMS.TPS
             string DataInspectorPolicy = "";
             double DataInspectorRestrictUserPercentage = 0;
             bool AnonymizePatientData = false;
+            BreastWatch.ScoreStyle DefaultScoreStyle = BreastWatch.ScoreStyle.Protocol;
 
             bool isPrefsFile = false;
             if (File.Exists(preffilePath))
@@ -154,6 +176,16 @@ namespace VMS.TPS
                     AnonymizePatientData = false;
                 else
                     AnonymizePatientData = false;
+
+                Section = "[BREASTWATCH]";
+                Tag = "DefaultScoreStyle";
+                TagContent = GetTagContent(prefString, Section, Tag);
+                if (TagContent == "Protocol")
+                    DefaultScoreStyle = BreastWatch.ScoreStyle.Protocol;
+                else if (TagContent == "Community")
+                    DefaultScoreStyle = BreastWatch.ScoreStyle.Community;
+                else if (TagContent == "Gradient")
+                    DefaultScoreStyle = BreastWatch.ScoreStyle.Gradient;
 
                 Section = "[BREASTWATCH]";
                 Tag = "DataInspectorPolicy";
@@ -185,41 +217,79 @@ namespace VMS.TPS
             }
 
             // Create main window
-            var mainWindow = new BreastWatch.MainWindow(pat, planSetup, planSum, structureSet, context.CurrentUser.Name, ExportPath, DataInspectorPolicy, DataInspectorRestrictUserPercentage, AnonymizePatientData);
+            
+            var mainWindow = new BreastWatch.MainWindow(pat, planSetup, planSum, structureSet, context.CurrentUser.Name, ExportPath, DataInspectorPolicy, DataInspectorRestrictUserPercentage, AnonymizePatientData, DefaultScoreStyle);
 
+            // Check if dose prescription is supported and auto-assign protocol
             int ProtocolIndex = -1;
             bool IsTotalBoostPrescription = false;
             if (planSetup != null)
             {
-                if (planSetup.TotalDose.Dose >= 40.049 && planSetup.TotalDose.Dose <= 40.051) //RT0G1005
-                    ProtocolIndex = 0;
-                else if (numPTVs >= 2 && planSetup.TotalDose.Dose >= 47.99 && planSetup.TotalDose.Dose <= 48.01) //RT0G1005 w BOOST
+                if (planSetup.TotalDose.Unit == DoseValue.DoseUnit.Gy)
                 {
-                    ProtocolIndex = 0;
-                    IsTotalBoostPrescription = true;
-                }
-                else if (planSetup.TotalDose.Dose >= 25.99 && planSetup.TotalDose.Dose <= 26.01) //NHSFF
-                {
-                    ProtocolIndex = 1;
-                }
-               else if(planSetup.TotalDose.Dose >= 29.99 && planSetup.TotalDose.Dose <= 30.01)
-               {
-                    if (numPTVs >= 2)  //NHSFF w BOOST
+                    if (planSetup.TotalDose.Dose >= 40.049 && planSetup.TotalDose.Dose <= 40.051) //RT0G1005
+                        ProtocolIndex = 0;
+                    else if (numPTVs >= 2 && planSetup.TotalDose.Dose >= 47.99 && planSetup.TotalDose.Dose <= 48.01) //RT0G1005 w BOOST
                     {
-                        ProtocolIndex = 1;
+                        ProtocolIndex = 0;
                         IsTotalBoostPrescription = true;
                     }
-                    else  //EUROPA v2.1 PBI 30 Gy
-                        ProtocolIndex = 5;
+                    else if (planSetup.TotalDose.Dose >= 25.99 && planSetup.TotalDose.Dose <= 26.01) //NHSFF
+                    {
+                        ProtocolIndex = 1;
+                    }
+                    else if (planSetup.TotalDose.Dose >= 29.99 && planSetup.TotalDose.Dose <= 30.01)
+                    {
+                        if (numPTVs >= 2)  //NHSFF w BOOST
+                        {
+                            ProtocolIndex = 1;
+                            IsTotalBoostPrescription = true;
+                        }
+                        else  //EUROPA v2.1 PBI 30 Gy
+                            ProtocolIndex = 5;
+                    }
+                    else if (planSetup.TotalDose.Dose >= 28.49 && planSetup.TotalDose.Dose <= 28.51) //FAST
+                    {
+                        ProtocolIndex = 2;
+                    }
+                    else if (numPTVs >= 2 && planSetup.TotalDose.Dose >= 30.99 && planSetup.TotalDose.Dose <= 31.01) //FAST w BOOST
+                    {
+                        ProtocolIndex = 2;
+                        IsTotalBoostPrescription = true;
+                    }
                 }
-                else if (planSetup.TotalDose.Dose >= 28.49 && planSetup.TotalDose.Dose <= 28.51) //FAST
+                else if (planSetup.TotalDose.Unit == DoseValue.DoseUnit.cGy)
                 {
-                    ProtocolIndex = 2;
-                }
-                else if(numPTVs >= 2 && planSetup.TotalDose.Dose >= 30.99 && planSetup.TotalDose.Dose <= 31.01) //FAST w BOOST
-                {
-                    ProtocolIndex = 2;
-                    IsTotalBoostPrescription = true;
+                    if (planSetup.TotalDose.Dose >= 4004.9 && planSetup.TotalDose.Dose <= 4005.1) //RT0G1005
+                        ProtocolIndex = 0;
+                    else if (numPTVs >= 2 && planSetup.TotalDose.Dose >= 4799 && planSetup.TotalDose.Dose <= 4801) //RT0G1005 w BOOST
+                    {
+                        ProtocolIndex = 0;
+                        IsTotalBoostPrescription = true;
+                    }
+                    else if (planSetup.TotalDose.Dose >= 2599 && planSetup.TotalDose.Dose <= 2601) //NHSFF
+                    {
+                        ProtocolIndex = 1;
+                    }
+                    else if (planSetup.TotalDose.Dose >= 2999 && planSetup.TotalDose.Dose <= 3001)
+                    {
+                        if (numPTVs >= 2)  //NHSFF w BOOST
+                        {
+                            ProtocolIndex = 1;
+                            IsTotalBoostPrescription = true;
+                        }
+                        else  //EUROPA v2.1 PBI 30 Gy
+                            ProtocolIndex = 5;
+                    }
+                    else if (planSetup.TotalDose.Dose >= 2849 && planSetup.TotalDose.Dose <= 2851) //FAST
+                    {
+                        ProtocolIndex = 2;
+                    }
+                    else if (numPTVs >= 2 && planSetup.TotalDose.Dose >= 3099 && planSetup.TotalDose.Dose <= 3101) //FAST w BOOST
+                    {
+                        ProtocolIndex = 2;
+                        IsTotalBoostPrescription = true;
+                    }
                 }
             }
             else if(planSum!= null)
@@ -228,36 +298,73 @@ namespace VMS.TPS
                 foreach (PlanSetup plansetupinsum in planSum.PlanSetups)
                     TotalPrescribedDose += plansetupinsum.TotalDose.Dose;
 
-                if (TotalPrescribedDose >= 40.049 && TotalPrescribedDose <= 40.051) //RTOG1005
-                    ProtocolIndex = 0;
-                else if (TotalPrescribedDose >= 25.99 && TotalPrescribedDose <= 26.01) //NHSFF
-                    ProtocolIndex = 1;
-                else if (TotalPrescribedDose >= 28.49 && TotalPrescribedDose <= 28.51) //FAST
-                    ProtocolIndex = 2;
-                else if (TotalPrescribedDose >= 29.99 && TotalPrescribedDose <= 30.01) //EUROPA v2.1 PBI 30 Gy
+                if (planSum.PlanSetups.First().TotalDose.Unit == DoseValue.DoseUnit.Gy)
                 {
-                    if (numPTVs >= 2)  //NHSFF w BOOST
+                    if (TotalPrescribedDose >= 40.049 && TotalPrescribedDose <= 40.051) //RTOG1005
+                        ProtocolIndex = 0;
+                    else if (TotalPrescribedDose >= 25.99 && TotalPrescribedDose <= 26.01) //NHSFF
+                        ProtocolIndex = 1;
+                    else if (TotalPrescribedDose >= 28.49 && TotalPrescribedDose <= 28.51) //FAST
+                        ProtocolIndex = 2;
+                    else if (TotalPrescribedDose >= 29.99 && TotalPrescribedDose <= 30.01) //EUROPA v2.1 PBI 30 Gy
+                    {
+                        if (numPTVs >= 2)  //NHSFF w BOOST
+                        {
+                            ProtocolIndex = 1;
+                            IsTotalBoostPrescription = true;
+                        }
+                        else  //EUROPA v2.1 PBI 30 Gy
+                            ProtocolIndex = 5;
+                    }
+                    else if (numPTVs >= 2 && TotalPrescribedDose >= 47.99 && TotalPrescribedDose <= 48.01) //RT0G1005 w BOOST
+                    {
+                        ProtocolIndex = 0;
+                        IsTotalBoostPrescription = true;
+                    }
+                    else if (numPTVs >= 2 && TotalPrescribedDose >= 29.99 && TotalPrescribedDose <= 30.01)
                     {
                         ProtocolIndex = 1;
                         IsTotalBoostPrescription = true;
                     }
-                    else  //EUROPA v2.1 PBI 30 Gy
-                        ProtocolIndex = 5;
+                    else if (numPTVs >= 2 && TotalPrescribedDose >= 30.99 && TotalPrescribedDose <= 31.01) //FAST w BOOST
+                    {
+                        ProtocolIndex = 2;
+                        IsTotalBoostPrescription = true;
+                    }
                 }
-                else if (numPTVs >= 2 && TotalPrescribedDose >= 47.99 && TotalPrescribedDose <= 48.01) //RT0G1005 w BOOST
+                else if (planSum.PlanSetups.First().TotalDose.Unit == DoseValue.DoseUnit.cGy)
                 {
-                    ProtocolIndex = 0;
-                    IsTotalBoostPrescription = true;
-                }
-                else if (numPTVs >= 2 && TotalPrescribedDose >= 29.99 && TotalPrescribedDose <= 30.01)
-                {
-                    ProtocolIndex = 1;
-                    IsTotalBoostPrescription = true;
-                }
-                else if (numPTVs >= 2 && TotalPrescribedDose >= 30.99 && TotalPrescribedDose <= 31.01) //FAST w BOOST
-                {
-                    ProtocolIndex = 2;
-                    IsTotalBoostPrescription = true;
+                    if (TotalPrescribedDose >= 4004.9 && TotalPrescribedDose <= 4005.1) //RTOG1005
+                        ProtocolIndex = 0;
+                    else if (TotalPrescribedDose >= 2599 && TotalPrescribedDose <= 2601) //NHSFF
+                        ProtocolIndex = 1;
+                    else if (TotalPrescribedDose >= 2849 && TotalPrescribedDose <= 2851) //FAST
+                        ProtocolIndex = 2;
+                    else if (TotalPrescribedDose >= 2999 && TotalPrescribedDose <= 3001) //EUROPA v2.1 PBI 30 Gy
+                    {
+                        if (numPTVs >= 2)  //NHSFF w BOOST
+                        {
+                            ProtocolIndex = 1;
+                            IsTotalBoostPrescription = true;
+                        }
+                        else  //EUROPA v2.1 PBI 30 Gy
+                            ProtocolIndex = 5;
+                    }
+                    else if (numPTVs >= 2 && TotalPrescribedDose >= 4799 && TotalPrescribedDose <= 4801) //RT0G1005 w BOOST
+                    {
+                        ProtocolIndex = 0;
+                        IsTotalBoostPrescription = true;
+                    }
+                    else if (numPTVs >= 2 && TotalPrescribedDose >= 2999 && TotalPrescribedDose <= 3001)
+                    {
+                        ProtocolIndex = 1;
+                        IsTotalBoostPrescription = true;
+                    }
+                    else if (numPTVs >= 2 && TotalPrescribedDose >= 3099 && TotalPrescribedDose <= 3101) //FAST w BOOST
+                    {
+                        ProtocolIndex = 2;
+                        IsTotalBoostPrescription = true;
+                    }
                 }
             }
 
@@ -349,14 +456,15 @@ namespace VMS.TPS
                             }
                         }
                     }
-                    else
+                    //else if(structure.DicomType != "SUPPORT" && structure.DicomType != "MARKER")
+                    else if(structure.DicomType == "ORGAN" || structure.DicomType == "CONTROL")
                     {
                         if (isPBI) // PBI
                         {
                             mainWindow.TargetBreastList.Items.Add(structure.Id);
                             mainWindow.TargetSPCList.Items.Add(structure.Id);
                         }
-                        if (!structure.Id.Contains("Bolus"))
+                        //if (!structure.Id.Contains("Bolus"))
                             {
                             mainWindow.IpsiLungList.Items.Add(structure.Id);
                             mainWindow.ContraLungList.Items.Add(structure.Id);
@@ -465,9 +573,20 @@ namespace VMS.TPS
                 }
             }
 
+            // Try to auto-detect Breath-Hold plans
             if (structureSet.Id.Contains("BH") || structureSet.Id.Contains("bh") || structureSet.Id.Contains("HOLD") || structureSet.Id.Contains("Hold") || structureSet.Id.Contains("hold") || structureSet.Id.Contains("APN") || structureSet.Id.Contains("apn"))
                 mainWindow.BreathHoldCheckBox.IsChecked = true;
- 
+            else if (planSetup != null)
+            {
+                if (planSetup.UseGating == true) // NEW v18
+                    mainWindow.BreathHoldCheckBox.IsChecked = true;
+            }
+            else if (planSum != null)
+            {
+                if (planSum.PlanSetups.First().UseGating == true) // NEW v18
+                    mainWindow.BreathHoldCheckBox.IsChecked = true;
+            }
+
             if (planSetup != null)
             {
                 mainWindow.SUMCheckBox.IsChecked = false;
@@ -507,7 +626,7 @@ namespace VMS.TPS
                 if (nBeamsVMAT > 0)
                     mainWindow.TechniqueVMAT.IsEnabled = true;
 
-                if (nBeamsIMRT == 0 && nBeamsVMAT == 0)
+                if (nBeamsStatic > 0 && nBeamsIMRT == 0 && nBeamsVMAT == 0)
                 {
                     mainWindow.Technique3DCRT.IsChecked = true;
                     mainWindow.TangentialCheckBox.IsEnabled = false;
@@ -523,7 +642,7 @@ namespace VMS.TPS
                     if (!isPBI && nBeamsVMAT == 0 && nBeamsStatic == 0 && nBeamsIMRT <= 4)
                         mainWindow.TangentialCheckBox.IsChecked = true;
 
-                    if (nBeamsStatic != 0)
+                    if (nBeamsStatic != 0 || nBeamsIMRT != 0 && nBeamsVMAT > 0)
                         mainWindow.HybridCheckBox.IsChecked = true;
                 }
 

@@ -1,4 +1,5 @@
-﻿// This is BreastWatch for ESAPI
+﻿
+// This is BreastWatch for ESAPI
 // Author: Stefano Agostinelli
 // 
 // Licensed under the terms described in the LICENSE file
