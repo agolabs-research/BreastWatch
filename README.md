@@ -61,4 +61,4 @@ Varian ESAPI assemblies are not distributed with this repository and must be obt
 ## Scientific Use and Citation
 
 If you use this software in scientific work, please cite:
-["Agostinelli S, Zefiro D, Garelli S, Cavagnetto F, Gusinu M, Bevegni M, Blandino G, Fozza A, Levrero F. BreastWatch: A Varian Eclipse script tool for Community-Based automatic evaluation of breast treatment plans. J Appl Clin Med Phys. 2025 Jun;26(6):e70080. doi: 10.1002/acm2.70080. Epub 2025 Apr 1. PMID: 40170438; PMCID: PMC 12148785."]https://aapm.onlinelibrary.wiley.com/doi/full/10.1002/acm2.70080
+["Agostinelli S, Zefiro D, Garelli S, Cavagnetto F, Gusinu M, Bevegni M, Blandino G, Fozza A, Levrero F. BreastWatch: A Varian Eclipse script tool for Community-Based automatic evaluation of breast treatment plans. J Appl Clin Med Phys. 2025 Jun;26(6):e70080. doi: 10.1002/acm2.70080. Epub 2025 Apr 1. PMID: 40170438; PMCID: PMC 12148785."](https://aapm.onlinelibrary.wiley.com/doi/full/10.1002/acm2.70080)
