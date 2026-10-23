@@ -65,6 +65,6 @@ If you use this software in scientific work, please cite:
 
 ---
 
-## Documentation and version blog
+## Documentation and Blog
 
 Point your browser to [agolabs.com](https://agolabs.com/breastwatch-plugin-home/)
