@@ -28,7 +28,7 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
-    <PlatformTarget>AnyCPU</PlatformTarget>
+    <PlatformTarget>x64</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>..\..\plugins</OutputPath>
@@ -54,11 +54,11 @@
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="VMS.TPS.Common.Model.API">
-      <HintPath>C:\Program Files (x86)\Varian\Vision\13.5\Bin64\VMS.TPS.Common.Model.API.dll</HintPath>
+      <HintPath>C:\Program Files (x86)\Varian\RTM\18.0\esapi\API\VMS.TPS.Common.Model.API.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="VMS.TPS.Common.Model.Types">
-      <HintPath>C:\Program Files (x86)\Varian\Vision\13.5\Bin64\VMS.TPS.Common.Model.Types.dll</HintPath>
+      <HintPath>C:\Program Files (x86)\Varian\RTM\18.0\esapi\API\VMS.TPS.Common.Model.Types.dll</HintPath>
       <Private>False</Private>
     </Reference>
   </ItemGroup>
