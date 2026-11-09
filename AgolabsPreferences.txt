@@ -1,0 +1,10 @@
+[NEMOXCOMPANION]
+NemoXPath=C:\Agolabs.com\Nemo X 2.9.0.0
+[BREASTWATCH]
+ExportPath=C:\Agolabs.com\BREAST WATCH
+AnonymizePatientData=FALSE
+DataInspectorPolicy=RESTRICTUSER
+DataInspectorRestrictUserPercentage=10
+[STEREOWATCH]
+ExportPath=C:\Agolabs.com\STEREO WATCH
+AnonymizePatientData=FALSE
